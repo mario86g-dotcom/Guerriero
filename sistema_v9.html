@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Cinzel+Decorative:wght@700&display=swap" rel="stylesheet"/>
+<title>Il Sistema del Guerriero</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --gold:#f0c040;--gold-dim:#a07820;--gold-m:#C49A3C;
+  --red:#e05050;--red-dim:#8B2020;
+  --green:#50c878;--green-dim:#1A5E35;
+  --blue:#5090e0;--blue-dim:#1A3A5E;
+  --purple:#9060d0;--purple-dim:#3D1A6E;
+  --orange:#f0a040;--orange-dim:#7A3A00;
+  --bg:#08090f;--bg2:#0e1018;--bg3:#14161f;--bg4:#1a1c28;
+  --border:#22253a;--text:#e8e0d0;--muted:#7a7a90;--muted2:#4a4a62;
+  --dungeon-border:#6030a0;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;padding-bottom:60px;overflow-x:hidden;}
+
+/* STARS */
+.stars-bg{position:fixed;inset:0;pointer-events:none;z-index:0;}
+.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d,3s) infinite alternate;}
+@keyframes twinkle{from{opacity:.08;}to{opacity:var(--op,.6);}}
+body.dungeon-mode .star{background:#b060f0;}
+
+/* ══════════════════════════════
+   HEADER — compatto e gerarchico
+══════════════════════════════ */
+.header{position:relative;z-index:2;background:linear-gradient(160deg,#08090f 0%,#14091e 45%,#08090f 100%);border-bottom:1px solid var(--gold-dim);padding:14px 16px 12px;text-align:center;transition:background .8s;}
+.header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% -20%,rgba(240,192,64,.13) 0%,transparent 60%);pointer-events:none;}
+/* titolo principale */
+.char-name{font-family:'Cinzel Decorative',serif;font-size:24px;font-weight:700;color:var(--gold);letter-spacing:3px;line-height:1;margin-bottom:4px;text-shadow:0 0 28px rgba(240,192,64,.38);}
+/* sottotitolo — classe + livello */
+.char-sub{font-family:'Cinzel',serif;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:10px;}
+.char-sub span{color:var(--gold-m);}
+/* riga dati compatta */
+.h-data{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;}
+.hd{font-family:'Cinzel',serif;font-size:10px;padding:3px 9px;border-radius:12px;letter-spacing:.5px;white-space:nowrap;}
+.hd-gold{background:linear-gradient(135deg,#c49a3c,#f0c040);color:#08090f;font-weight:800;}
+.hd-purple{border:1px solid var(--purple);color:var(--purple);}
+.hd-orange{border:1px solid var(--orange-dim);color:var(--orange);}
+.hd-red{border:1px solid var(--red-dim);color:var(--red);}
+.hd-green{background:rgba(80,200,120,.08);border:1px solid var(--green-dim);color:var(--green);}
+
+/* LAYOUT */
+.container{max-width:680px;margin:0 auto;padding:10px 12px 0;position:relative;z-index:2;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:540px){.grid-2{grid-template-columns:1fr;gap:8px;}}
+.sg{margin-top:10px;}
+
+/* BASE CARD */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;position:relative;overflow:hidden;}
+.card-title{font-family:'Cinzel',serif;font-size:9px;letter-spacing:3px;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.card-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--gold-dim),transparent);}
+
+/* ══════════════════════════════
+   STATS — card grande, pride of place
+══════════════════════════════ */
+.stats-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.stat-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.stat-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+.stat-name{font-family:'Cinzel',serif;font-size:9px;color:var(--muted);width:62px;flex-shrink:0;letter-spacing:1px;}
+.stat-track{flex:1;height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;border:1px solid var(--border);}
+.stat-fill{height:100%;border-radius:4px;transition:width .6s;}
+.stat-num{font-size:13px;font-weight:700;width:20px;text-align:right;}
+.stat-mod{font-family:'Cinzel',serif;font-size:9px;color:var(--muted);width:24px;text-align:right;}
+
+/* ══════════════════════════════
+   STREAK — mini widget
+══════════════════════════════ */
+.streak-widget{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;}
+.streak-flame{font-size:22px;animation:flicker 1.2s infinite alternate;flex-shrink:0;}
+@keyframes flicker{0%{transform:scaleY(1) rotate(-1deg);}100%{transform:scaleY(1.07) rotate(1deg);}}
+.streak-center{flex:1;}
+.streak-num{font-family:'Cinzel Decorative',serif;font-size:28px;font-weight:700;color:var(--gold);line-height:1;text-shadow:0 0 16px rgba(240,192,64,.35);}
+.streak-lbl{font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:2px;margin-top:1px;}
+.streak-msg{font-size:10px;color:var(--muted);margin-top:2px;}
+.streak-btns{display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
+
+/* ══════════════════════════════
+   ASCENSIONE — timeline compatta
+══════════════════════════════ */
+.asc-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.class-timeline{position:relative;padding-left:18px;}
+.class-timeline::before{content:'';position:absolute;left:5px;top:4px;bottom:4px;width:1px;background:linear-gradient(180deg,var(--gold-dim),transparent);}
+.class-item{position:relative;margin-bottom:11px;opacity:.25;transition:opacity .3s;}
+.class-item.current{opacity:1;}
+.class-item.achieved{opacity:.6;}
+.class-item::before{content:'';position:absolute;left:-15px;top:4px;width:7px;height:7px;border-radius:50%;border:1px solid var(--gold-dim);background:var(--bg);}
+.class-item.current::before{background:var(--gold);border-color:var(--gold);box-shadow:0 0 7px rgba(240,192,64,.45);}
+.class-item.achieved::before{background:var(--gold-dim);}
+.class-lv{font-family:'Cinzel',serif;font-size:7px;color:var(--muted2);letter-spacing:1px;}
+.class-name{font-family:'Cinzel',serif;font-size:11px;font-weight:700;color:var(--gold);margin-bottom:1px;}
+.class-phrase{font-size:10px;color:var(--muted);font-style:italic;line-height:1.35;}
+.class-privilege{font-size:10px;color:var(--green);margin-top:2px;}
+
+/* ══════════════════════════════
+   SCANSIONE
+══════════════════════════════ */
+.scan-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;transition:border-color .4s;}
+.scan-card.active{border-color:rgba(144,96,208,.4);}
+.scan-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;}
+@media(max-width:380px){.scan-grid{grid-template-columns:1fr;}}
+.scan-field{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 9px;}
+.scan-label{font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;margin-bottom:4px;}
+.scan-options{display:flex;gap:3px;flex-wrap:wrap;}
+.scan-opt{padding:3px 7px;border-radius:5px;border:1px solid var(--border);background:transparent;font-size:10px;color:var(--muted);cursor:pointer;transition:all .18s;font-family:'Cinzel',serif;}
+.scan-opt:hover{border-color:var(--purple);color:var(--purple);}
+.scan-opt.selected{background:rgba(144,96,208,.18);border-color:var(--purple);color:#c090f0;}
+.protocollo-box{display:none;margin-top:8px;}
+.protocollo-box.show{display:block;animation:fadeIn .5s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+.proto-inner{padding:10px 12px;border-radius:8px;}
+.proto-tag{font-family:'Cinzel',serif;font-size:7px;letter-spacing:3px;margin-bottom:4px;}
+.proto-name{font-family:'Cinzel Decorative',serif;font-size:14px;font-weight:700;margin-bottom:5px;}
+.proto-text{font-size:11px;line-height:1.65;font-style:italic;}
+
+/* ══════════════════════════════
+   STATO DEL GIORNO
+══════════════════════════════ */
+.oggi-card{background:var(--bg2);border:1px solid rgba(240,192,64,.2);border-radius:12px;padding:12px 14px;}
+.oggi-top{display:flex;gap:6px;margin-bottom:9px;}
+.oggi-stat{flex:1;background:var(--bg3);border-radius:7px;padding:7px 8px;border:1px solid var(--border);text-align:center;}
+.oggi-stat-val{font-family:'Cinzel Decorative',serif;font-size:16px;font-weight:700;color:var(--gold);line-height:1;}
+.oggi-stat-lbl{font-family:'Cinzel',serif;font-size:7px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.oggi-quests{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+@media(max-width:360px){.oggi-quests{grid-template-columns:1fr;}}
+.oq{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;user-select:none;transition:all .18s;}
+.oq:hover{border-color:var(--gold-dim);}
+.oq.done{opacity:.38;}
+.oq.done .oq-name{text-decoration:line-through;}
+.oq-check{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;}
+.oq.done .oq-check{background:linear-gradient(135deg,#7a4800,var(--gold));border-color:var(--gold);}
+.oq-name{font-size:11px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.oq-xp{font-family:'Cinzel',serif;font-size:8px;color:var(--gold);flex-shrink:0;}
+
+/* MISSIONE */
+.missione-card{background:var(--bg2);border:1px solid rgba(240,192,64,.25);border-radius:12px;padding:12px 14px;display:none;}
+.miss-tag{font-family:'Cinzel',serif;font-size:7px;letter-spacing:3px;color:var(--gold-dim);margin-bottom:3px;}
+.miss-main{font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:var(--gold);line-height:1.5;margin-bottom:9px;}
+.miss-section{font-family:'Cinzel',serif;font-size:7px;letter-spacing:2px;color:var(--muted);margin-bottom:4px;}
+.miss-item{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);margin-bottom:3px;font-size:11px;cursor:pointer;transition:all .18s;}
+.miss-item:hover{border-color:var(--gold-dim);}
+.miss-item.done{opacity:.38;}
+.miss-check{width:13px;height:13px;border-radius:3px;border:1px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:8px;}
+.miss-item.done .miss-check{background:var(--gold);border-color:var(--gold);color:#08090f;}
+.fail-box{padding:7px 9px;background:rgba(224,80,80,.05);border:1px solid rgba(224,80,80,.2);border-radius:7px;font-size:10px;color:var(--red);margin-top:7px;font-style:italic;}
+
+/* DUNGEON */
+.dungeon-card{background:#0a0610;border:1px solid var(--dungeon-border);border-radius:12px;padding:12px 14px;display:none;position:relative;overflow:hidden;}
+.dungeon-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(96,0,160,.18) 0%,transparent 60%);pointer-events:none;}
+.dungeon-card.show{display:block;animation:fadeIn .7s ease;}
+.dungeon-type{font-family:'Cinzel Decorative',serif;font-size:13px;color:#c090f0;margin-bottom:3px;}
+.dungeon-desc{font-size:11px;color:#8050b0;line-height:1.6;margin-bottom:8px;font-style:italic;}
+.dungeon-memory{padding:7px 9px;background:rgba(96,0,160,.13);border:1px solid rgba(144,96,208,.25);border-radius:7px;font-size:10px;color:#a070d0;margin-bottom:9px;font-style:italic;}
+
+/* XP */
+.xp-track{height:9px;background:var(--bg3);border-radius:5px;overflow:hidden;border:1px solid var(--border);position:relative;}
+.xp-fill{height:100%;background:linear-gradient(90deg,#7a4800,#f0c040,#ffe080);border-radius:5px;transition:width .8s cubic-bezier(.4,0,.2,1);overflow:hidden;}
+.xp-shine{position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);animation:shine 2.5s infinite;}
+@keyframes shine{0%{left:-100%;}100%{left:200%;}}
+
+/* QUEST TABS */
+.q-tabs{display:flex;gap:3px;margin-bottom:9px;flex-wrap:wrap;}
+.q-tab{padding:4px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);font-family:'Cinzel',serif;font-size:8px;letter-spacing:1px;cursor:pointer;color:var(--muted);transition:all .18s;}
+.q-tab:hover{border-color:var(--gold-dim);color:var(--gold);}
+.q-tab.active{background:linear-gradient(135deg,#7a4800,#c49a3c);color:#08090f;font-weight:700;border-color:var(--gold);}
+.q-tab.tab-malus.active{background:var(--red);color:#fff;border-color:var(--red);}
+.q-tab.tab-admin.active{background:var(--muted2);color:#fff;}
+.q-panel{display:none;}
+.q-panel.active{display:block;}
+
+/* QUEST ITEMS */
+.quest-item{display:flex;align-items:flex-start;gap:7px;padding:8px 9px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);margin-bottom:5px;cursor:pointer;user-select:none;transition:all .18s;}
+.quest-item:hover{border-color:var(--gold-dim);}
+.quest-item.done{opacity:.38;}
+.quest-item.done .q-name{text-decoration:line-through;}
+.q-check{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:9px;}
+.quest-item.done .q-check{background:linear-gradient(135deg,#7a4800,var(--gold));border-color:var(--gold);}
+.q-body{flex:1;}
+.q-name{font-size:11px;font-weight:600;margin-bottom:1px;}
+.q-desc{font-size:9px;color:var(--muted);line-height:1.3;}
+.q-xp{font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--gold);background:rgba(240,192,64,.07);padding:2px 6px;border-radius:6px;white-space:nowrap;align-self:center;border:1px solid rgba(240,192,64,.1);}
+.q-malus-badge{font-family:'Cinzel',serif;font-size:8px;color:var(--red);background:rgba(224,80,80,.06);padding:2px 6px;border-radius:6px;white-space:nowrap;align-self:center;border:1px solid rgba(224,80,80,.18);}
+.malus-item{display:flex;align-items:flex-start;gap:7px;padding:8px 9px;border-radius:8px;border:1px solid rgba(224,80,80,.18);background:rgba(224,80,80,.03);margin-bottom:5px;cursor:pointer;user-select:none;}
+.malus-item.applied{opacity:.4;}
+.malus-item.applied .q-name{text-decoration:line-through;}
+.m-check{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--red-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:9px;color:var(--red);}
+.malus-item.applied .m-check{background:var(--red);border-color:var(--red);color:#fff;}
+
+/* BOSS */
+.boss-card{border-radius:9px;padding:11px;margin-bottom:9px;}
+.boss-hp-track{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;border:1px solid var(--border);}
+.boss-hp-fill{height:100%;transition:width .5s;}
+.boss-days{display:flex;gap:3px;flex-wrap:wrap;margin-top:7px;}
+.boss-day{width:24px;height:24px;border-radius:5px;border:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);cursor:pointer;transition:all .18s;}
+.boss-day.hit{background:rgba(224,80,80,.16);border-color:var(--red);color:var(--red);}
+.boss-day.today{border-color:var(--gold);color:var(--gold);}
+
+/* WEIGHT */
+.w-track{height:7px;background:var(--bg3);border-radius:4px;overflow:hidden;border:1px solid var(--border);margin:5px 0;}
+.w-fill{height:100%;background:linear-gradient(90deg,var(--green-dim),var(--green));border-radius:4px;transition:width .6s;}
+.w-entry{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:10px;}
+.w-entry:last-child{border-bottom:none;}
+
+/* RINGS */
+.ring-card{border-radius:9px;padding:10px;border:1px solid var(--border);text-align:center;background:var(--bg3);}
+.ring-card.locked{opacity:.22;filter:grayscale(.9);}
+.ring-card.unlocked{box-shadow:0 0 16px rgba(240,192,64,.18);border-color:var(--gold-dim);}
+
+/* HIDDEN QUESTS */
+.hq-item{display:flex;align-items:center;gap:7px;padding:8px 10px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);margin-bottom:5px;transition:all .3s;}
+.hq-item.locked{opacity:.28;}
+.hq-item.unlocked{border-color:rgba(144,96,208,.45);background:rgba(144,96,208,.05);animation:hqPulse 3s infinite;}
+@keyframes hqPulse{0%,100%{box-shadow:0 0 6px rgba(144,96,208,.08);}50%{box-shadow:0 0 14px rgba(144,96,208,.2);}}
+.hq-item.claimed{opacity:.4;border-color:var(--green-dim);}
+.hq-icon{font-size:17px;flex-shrink:0;}
+.hq-body{flex:1;min-width:0;}
+.hq-name{font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:var(--purple);margin-bottom:1px;}
+.hq-desc{font-size:9px;color:var(--muted);line-height:1.35;}
+.hq-track{height:3px;background:var(--bg);border-radius:2px;overflow:hidden;margin-top:4px;}
+.hq-fill{height:100%;background:linear-gradient(90deg,var(--purple-dim),var(--purple));border-radius:2px;transition:width .6s;}
+.hq-progress{font-family:'Cinzel',serif;font-size:8px;color:var(--muted2);margin-top:2px;}
+.hq-reward{font-family:'Cinzel',serif;font-size:8px;color:var(--gold);white-space:nowrap;flex-shrink:0;}
+
+/* ACHIEVEMENTS */
+.ach-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
+@media(max-width:360px){.ach-grid{grid-template-columns:repeat(3,1fr);}}
+.ach-item{text-align:center;padding:7px 3px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);}
+.ach-item.locked{opacity:.16;filter:grayscale(1);}
+.ach-item.unlocked{border-color:var(--gold-dim);background:rgba(240,192,64,.04);}
+.ach-icon{font-size:16px;margin-bottom:2px;}
+.ach-name{font-family:'Cinzel',serif;font-size:8px;color:var(--muted);line-height:1.2;}
+
+/* MISC */
+.moena-card{border:1px solid var(--gold-m);border-radius:9px;padding:10px;background:linear-gradient(135deg,rgba(192,154,60,.05),rgba(144,96,208,.05));margin-bottom:9px;}
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:5px;}
+.week-day{text-align:center;padding:4px 2px;border-radius:5px;border:1px solid var(--border);background:var(--bg);}
+.divl{height:1px;background:var(--border);margin:7px 0;}
+.save-status{font-family:'Cinzel',serif;font-size:8px;color:var(--muted2);text-align:right;margin-top:3px;letter-spacing:1px;}
+.diario-textarea{width:100%;padding:8px 9px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:11px;outline:none;resize:vertical;min-height:68px;font-family:inherit;line-height:1.5;}
+.diario-textarea:focus{border-color:var(--gold-dim);}
+.narrazione-box{padding:10px;background:rgba(144,96,208,.04);border:1px solid rgba(144,96,208,.18);border-radius:7px;font-size:11px;line-height:1.75;font-style:italic;margin-top:7px;display:none;}
+.narrazione-box.show{display:block;}
+.log-entry{display:flex;align-items:flex-start;gap:5px;padding:4px 0;border-bottom:1px solid var(--border);font-size:10px;}
+.log-entry:last-child{border-bottom:none;}
+.integ-item{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:7px;background:var(--bg3);border:1px solid var(--border);margin-bottom:4px;cursor:pointer;}
+.integ-item.done{opacity:.38;}
+.integ-check{width:13px;height:13px;border-radius:3px;border:1.5px solid var(--gold-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:8px;}
+.integ-item.done .integ-check{background:var(--gold);border-color:var(--gold);}
+.integ-name{font-size:11px;flex:1;}
+.integ-dose{font-size:9px;color:var(--muted);}
+.admin-box{padding:9px;background:rgba(90,90,114,.06);border:1px solid var(--muted2);border-radius:8px;margin-bottom:7px;}
+.admin-row{display:flex;gap:5px;align-items:center;margin-bottom:5px;}
+.admin-input{flex:1;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:11px;outline:none;}
+
+/* BUTTONS */
+.btn{padding:7px 13px;border-radius:8px;border:none;background:linear-gradient(135deg,#7a4800,#c49a3c,#f0c040);color:#08090f;font-weight:700;font-family:'Cinzel',serif;font-size:10px;cursor:pointer;letter-spacing:.5px;transition:all .18s;}
+.btn:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(240,192,64,.18);}
+.btn:active{transform:translateY(0);}
+.btn-sm{padding:4px 9px;font-size:9px;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-outline:hover{border-color:var(--gold-dim);color:var(--gold);box-shadow:none;transform:none;}
+.btn-danger{background:transparent;border:1px solid var(--red);color:var(--red);}
+.btn-danger:hover{background:rgba(224,80,80,.07);box-shadow:none;transform:none;}
+.btn-green{background:linear-gradient(135deg,var(--green-dim),var(--green));color:#08090f;}
+.btn-purple{background:linear-gradient(135deg,var(--purple-dim),var(--purple));color:#fff;}
+.btn-dungeon{background:linear-gradient(135deg,#3d1a6e,#9060d0);color:#fff;width:100%;}
+.btn-gray{background:var(--bg4);color:var(--muted);border:1px solid var(--border);}
+.btn-gray:hover{box-shadow:none;transform:none;}
+
+/* XP FLOAT */
+.xp-float{position:fixed;font-family:'Cinzel Decorative',serif;font-weight:700;font-size:18px;pointer-events:none;z-index:999;animation:floatUp 1.2s ease-out forwards;}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-75px);}}
+
+/* HQ BANNER */
+.hq-banner{position:fixed;top:0;left:0;right:0;z-index:1001;background:linear-gradient(135deg,#3d1a6e,#9060d0);padding:12px 18px;text-align:center;transform:translateY(-100%);transition:transform .45s cubic-bezier(.4,0,.2,1);}
+.hq-banner.show{transform:translateY(0);}
+
+/* MODALS */
+#lvlModal,#ascModal,#combatModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:1000;align-items:center;justify-content:center;}
+#lvlModal.show,#ascModal.show,#combatModal.show{display:flex;}
+.modal-box{border-radius:14px;padding:24px 28px;text-align:center;max-width:320px;width:92%;}
+.combat-hp-track{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;border:1px solid var(--border);margin:5px 0;}
+.combat-hp-fill{height:100%;border-radius:4px;transition:width .4s;}
+
+/* TOAST */
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(65px);padding:7px 16px;border-radius:16px;font-family:'Cinzel',serif;font-weight:700;font-size:10px;letter-spacing:.5px;transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:999;pointer-events:none;white-space:nowrap;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+#toast.t-gold{background:linear-gradient(135deg,#7a4800,var(--gold));color:#08090f;}
+#toast.t-red{background:var(--red);color:#fff;}
+#toast.t-green{background:var(--green);color:#08090f;}
+#toast.t-purple{background:var(--purple);color:#fff;}
+</style>
+</head>
+<body>
+<div class="stars-bg" id="starsBg"></div>
+
+<!-- ══ HEADER — gerarchia pulita ══ -->
+<div class="header">
+  <div class="char-name">IL GUERRIERO</div>
+  <div class="char-sub" id="charSub"><span id="charClassName">Recluta del Varco</span> · Livello <span id="lvDisp">2</span></div>
+  <div class="h-data">
+    <div class="hd hd-gold">⚔ LV <span id="lvDisp2">2</span></div>
+    <div class="hd hd-purple">Sett. <span id="weekDisp">1</span>/8</div>
+    <div class="hd hd-green" id="weightBadge">⚖ 88.1 kg</div>
+    <div class="hd hd-orange">🔥 <span id="streakDisp">4</span> gg</div>
+    <div class="hd hd-red">💀 <span id="bossHpDisp">1000</span></div>
+  </div>
+</div>
+
+<!-- HQ BANNER -->
+<div class="hq-banner" id="hqBanner">
+  <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:3px;color:rgba(255,255,255,.7);margin-bottom:3px;">QUEST NASCOSTA SBLOCCATA</div>
+  <div style="font-family:'Cinzel Decorative',serif;font-size:15px;color:#fff;margin-bottom:2px;" id="hqBannerTitle">—</div>
+  <div style="font-family:'Cinzel',serif;font-size:9px;color:#d0b0ff;" id="hqBannerReward">—</div>
+</div>
+
+<div class="container">
+
+<!-- ① SCANSIONE -->
+<div class="scan-card sg" id="scanCard">
+  <div class="card-title">🔍 Scansione del Sistema</div>
+  <div class="scan-grid">
+    <div class="scan-field">
+      <div class="scan-label">SONNO</div>
+      <div class="scan-options">
+        <div class="scan-opt" data-field="sonno" data-val="ottimo" onclick="selectScan(this)">+8h</div>
+        <div class="scan-opt" data-field="sonno" data-val="buono" onclick="selectScan(this)">6-8h</div>
+        <div class="scan-opt" data-field="sonno" data-val="scarso" onclick="selectScan(this)">&lt;6h</div>
+      </div>
+    </div>
+    <div class="scan-field">
+      <div class="scan-label">ENERGIA</div>
+      <div class="scan-options">
+        <div class="scan-opt" data-field="energia" data-val="alta" onclick="selectScan(this)">Alta</div>
+        <div class="scan-opt" data-field="energia" data-val="media" onclick="selectScan(this)">Media</div>
+        <div class="scan-opt" data-field="energia" data-val="bassa" onclick="selectScan(this)">Bassa</div>
+      </div>
+    </div>
+    <div class="scan-field">
+      <div class="scan-label">CORPO</div>
+      <div class="scan-options">
+        <div class="scan-opt" data-field="corpo" data-val="fresco" onclick="selectScan(this)">Fresco</div>
+        <div class="scan-opt" data-field="corpo" data-val="ok" onclick="selectScan(this)">OK</div>
+        <div class="scan-opt" data-field="corpo" data-val="pesante" onclick="selectScan(this)">Pesante</div>
+      </div>
+    </div>
+    <div class="scan-field">
+      <div class="scan-label">AGENDA</div>
+      <div class="scan-options">
+        <div class="scan-opt" data-field="agenda" data-val="libera" onclick="selectScan(this)">Libera</div>
+        <div class="scan-opt" data-field="agenda" data-val="normale" onclick="selectScan(this)">Normale</div>
+        <div class="scan-opt" data-field="agenda" data-val="caotica" onclick="selectScan(this)">Caotica</div>
+      </div>
+    </div>
+  </div>
+  <button class="btn" style="width:100%;" onclick="runScansione()">⚡ Avvia Scansione</button>
+  <div class="protocollo-box" id="protocolloBox"></div>
+</div>
+
+<!-- ② STATO DEL GIORNO -->
+<div class="oggi-card sg">
+  <div class="card-title">📋 Stato del Giorno</div>
+  <div class="oggi-top">
+    <div class="oggi-stat"><div class="oggi-stat-val" id="xpOggiVal">0</div><div class="oggi-stat-lbl">XP OGGI</div></div>
+    <div class="oggi-stat"><div class="oggi-stat-val" id="questOggiVal">0/7</div><div class="oggi-stat-lbl">QUEST</div></div>
+    <div class="oggi-stat"><div class="oggi-stat-val" id="pesoOggiVal">88.1</div><div class="oggi-stat-lbl">KG</div></div>
+    <div class="oggi-stat"><div class="oggi-stat-val" id="pesomediaVal">—</div><div class="oggi-stat-lbl">MEDIA 7gg</div></div>
+  </div>
+  <div class="oggi-quests" id="oggiQuests"></div>
+</div>
+
+<!-- ③ MISSIONE (appare dopo scansione) -->
+<div class="missione-card sg" id="missioneCard">
+  <div class="miss-tag">MISSIONE PRINCIPALE</div>
+  <div class="miss-main" id="missMain">—</div>
+  <div class="miss-section">MISSIONI SECONDARIE</div>
+  <div id="missSecondarie"></div>
+  <div class="fail-box" id="missFailBox"></div>
+</div>
+
+<!-- ④ DUNGEON (appare se rilevato) -->
+<div class="dungeon-card sg" id="dungeonCard">
+  <div style="font-family:'Cinzel',serif;font-size:8px;letter-spacing:3px;color:#7040a0;margin-bottom:7px;">⚠ DUNGEON RILEVATO</div>
+  <div class="dungeon-type" id="dungeonType">—</div>
+  <div class="dungeon-desc" id="dungeonDesc">—</div>
+  <div class="dungeon-memory" id="dungeonMemory"></div>
+  <button class="btn btn-dungeon" onclick="acceptDungeon()">⚔ Accetto il Dungeon</button>
+</div>
+
+<!-- ⑤ CAMERA DELL'EVOLUZIONE -->
+<div class="card sg">
+  <div class="card-title">🖼 Camera dell'Evoluzione</div>
+  <div style="display:flex;gap:12px;align-items:flex-start;">
+    <!-- Avatar slot -->
+    <div id="avatarBox" style="width:120px;flex-shrink:0;border:1px dashed var(--gold-dim);border-radius:10px;padding:10px;text-align:center;position:relative;min-height:140px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg3);">
+      <img id="avatarImg" src="" style="display:none;width:100%;border-radius:7px;margin-bottom:6px;"/>
+      <div id="avatarPh">
+        <div style="font-size:28px;margin-bottom:4px;">⚔</div>
+      </div>
+      <button class="btn btn-sm" style="width:100%;font-size:8px;margin-top:6px;" onclick="document.getElementById('avatarIn').click()">📸 Carica</button>
+      <div style="position:absolute;top:5px;right:5px;background:linear-gradient(135deg,#7a4800,var(--gold));color:#08090f;font-family:'Cinzel',serif;font-weight:800;font-size:8px;padding:2px 7px;border-radius:6px;" id="avatarLv">LV 2</div>
+    </div>
+    <input type="file" id="avatarIn" accept="image/*" style="position:absolute;left:-9999px;opacity:0;"/>
+    <!-- Info colonna -->
+    <div style="flex:1;min-width:0;">
+      <div style="font-family:'Cinzel',serif;font-size:9px;color:var(--gold-dim);letter-spacing:1px;margin-bottom:4px;" id="avatarClassName">RECLUTA DEL VARCO</div>
+      <div style="font-size:10px;color:var(--muted);font-style:italic;line-height:1.6;margin-bottom:8px;" id="avatarClassPhrase">Hai varcato la soglia. Nessuno torna indietro.</div>
+      <button class="btn btn-sm" style="width:100%;margin-bottom:6px;" onclick="copyAvatarPrompt()">✨ Copia Prompt AI</button>
+      <!-- URL alternativo -->
+      <div style="display:flex;gap:4px;">
+        <input id="avatarUrlInput" placeholder="Oppure incolla URL immagine..." style="flex:1;padding:4px 7px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:10px;outline:none;"/>
+        <button class="btn btn-sm btn-gray" onclick="loadAvatarFromUrl()">→</button>
+      </div>
+      <div style="font-size:8px;color:var(--green);margin-top:4px;display:none;" id="promptCopied">✓ Prompt copiato</div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑥ CARATTERISTICHE (grande, protagonista) -->
+<div class="stats-card sg">
+  <div class="card-title">📊 Caratteristiche</div>
+  <div id="statsContainer"></div>
+  <div style="margin-top:6px;padding:6px 8px;background:var(--bg3);border-radius:7px;border:1px solid var(--border);">
+    <div style="font-size:10px;color:var(--gold);" id="nextStatHint">Boss F.I → +1 WIS (12 quest)</div>
+  </div>
+</div>
+
+<!-- ⑥ ASCENSIONE -->
+<div class="asc-card sg">
+  <div class="card-title">⚡ Ascensione</div>
+  <div class="class-timeline" id="classTimeline"></div>
+</div>
+
+<!-- ⑦ STREAK (mini-widget) + XP -->
+<div class="grid-2 sg">
+  <div class="streak-widget">
+    <div class="streak-flame">🔥</div>
+    <div class="streak-center">
+      <div class="streak-num" id="streakNum">4</div>
+      <div class="streak-lbl">GIORNI</div>
+      <div class="streak-msg" id="streakMsg">7 gg = +40 XP</div>
+    </div>
+    <div class="streak-btns">
+      <button class="btn btn-sm btn-green" onclick="addStreak()">+1</button>
+      <button class="btn btn-sm btn-danger" onclick="resetStreak()" style="font-size:8px;">↺</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">⚡ XP</div>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+      <span style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);letter-spacing:1px;">TOTALI</span>
+      <span style="font-family:'Cinzel Decorative',serif;font-size:13px;font-weight:700;color:var(--gold);" id="xpDisp">325/500</span>
+    </div>
+    <div class="xp-track"><div class="xp-fill" id="xpBar"><div class="xp-shine"></div></div></div>
+    <div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted);margin-top:3px;text-align:right;" id="nextLv">→ Lv 3 · 175 XP</div>
+    <div class="divl"></div>
+    <div style="font-size:9px;color:var(--muted);line-height:1.85;">🥉 Lv 3 · 87kg · 14gg · 31mag<br>🥈 Lv 6 · 85kg · 13giu<br>🥇 Lv 8 · 80kg · 30giu</div>
+    <div class="save-status" id="saveStatus">💾 —</div>
+  </div>
+</div>
+
+<!-- ⑧ QUEST BOARD -->
+<div class="card sg">
+  <div class="card-title">📜 Quest Board</div>
+  <div class="q-tabs">
+    <div class="q-tab active" onclick="switchTab('weekly',this)">Settimanali</div>
+    <div class="q-tab" onclick="switchTab('training',this)">💪 Allenamento</div>
+    <div class="q-tab" onclick="switchTab('boss',this)">☠ Boss</div>
+    <div class="q-tab" onclick="switchTab('rings',this)">💍 Anelli</div>
+    <div class="q-tab" onclick="switchTab('hidden',this)">🔮 Hidden</div>
+    <div class="q-tab tab-malus" onclick="switchTab('malus',this)">💀 Malus</div>
+    <div class="q-tab" onclick="switchTab('integ',this)">💊</div>
+    <div class="q-tab tab-admin" onclick="switchTab('admin',this)">⚙</div>
+  </div>
+
+  <div class="q-panel active" id="tab-weekly">
+    <div style="font-size:10px;color:var(--muted);margin-bottom:7px;">Reset lunedì. Min 4/6.</div>
+    <div class="quest-item" id="q-pesi3" onclick="toggleQuest('q-pesi3',40,'⚔ 3 sessioni pesi!')"><div class="q-check" id="chk-q-pesi3">☐</div><div class="q-body"><div class="q-name">⚔ 3 sessioni pesi</div><div class="q-desc">Push · Legs · Pull</div></div><div class="q-xp">+40</div></div>
+    <div class="quest-item" id="q-nuoto3" onclick="toggleQuest('q-nuoto3',28,'🏊 Nuotate!')"><div class="q-check" id="chk-q-nuoto3">☐</div><div class="q-body"><div class="q-name">🏊 Nuotate in settimana</div><div class="q-desc">Piscina quando disponibile. Zona 2.</div></div><div class="q-xp">+28</div></div>
+    <div class="quest-item" id="q-cardio2" onclick="toggleQuest('q-cardio2',35,'🏃 Cardio!')"><div class="q-check" id="chk-q-cardio2">☐</div><div class="q-body"><div class="q-name">🏃 2 cardio pesanti</div><div class="q-desc">75-90 min. HIIT una volta.</div></div><div class="q-xp">+35</div></div>
+    <div class="quest-item" id="q-outdoor" onclick="toggleQuest('q-outdoor',45,'🥾 Outdoor!')"><div class="q-check" id="chk-q-outdoor">☐</div><div class="q-body"><div class="q-name">🥾 Outdoor weekend</div><div class="q-desc">Montagna, canoa, 45+ min.</div></div><div class="q-xp">+45</div></div>
+    <div class="quest-item" id="q-diario" onclick="toggleQuest('q-diario',30,'📖 Cronache!')"><div class="q-check" id="chk-q-diario">☐</div><div class="q-body"><div class="q-name">📖 Cronache della settimana</div><div class="q-desc">5 domande nel diario.</div></div><div class="q-xp">+30</div></div>
+    <div class="quest-item" id="q-foto" onclick="toggleQuest('q-foto',40,'📸 Foto!')"><div class="q-check" id="chk-q-foto">☐</div><div class="q-body"><div class="q-name">📸 Foto progressione (ogni 2 sett.)</div></div><div class="q-xp">+40</div></div>
+  </div>
+
+  <div class="q-panel" id="tab-training">
+    <div style="display:flex;gap:3px;margin-bottom:7px;flex-wrap:wrap;" id="progTabs">
+      <div class="q-tab active" onclick="switchProg('push',this)">⚔ Push</div>
+      <div class="q-tab" onclick="switchProg('legs',this)">🦵 Legs</div>
+      <div class="q-tab" onclick="switchProg('pull',this)">🛡 Pull</div>
+      <div class="q-tab" onclick="switchProg('cardio',this)">💨 Cardio</div>
+    </div>
+    <div id="prog-push"><div style="font-size:11px;color:var(--text);line-height:1.9;">Panca piana 4×8-10 · Panca inclinata 3×10-12 · Croci cavi 3×12 · Shoulder press 3×10-12 · Alzate laterali 3×15 · Tricipiti corda 4×12-15 · Plank 2×60s</div></div>
+    <div id="prog-legs" style="display:none;"><div style="font-size:10px;color:var(--green);margin-bottom:4px;font-weight:700;">⚡ Schema ridotto = DEFAULT.</div><div style="font-size:11px;color:var(--text);line-height:1.9;">Squat 3-4×8-10 · Leg press 3×12 · Leg curl 3×12 · Polpacci 3×15 · Plank 2×45s</div></div>
+    <div id="prog-pull" style="display:none;"><div style="font-size:11px;color:var(--text);line-height:1.9;">Lat machine 4×8-10 · Rematore 4×10/lato · Rear delt 3×15 · Face pull 3×15 · Panca Scott 4×10-12 · Russian twist 3×20</div></div>
+    <div id="prog-cardio" style="display:none;"><div style="font-size:11px;color:var(--text);line-height:1.9;">Nuoto 60 min · Recline bike 90 min zona 2 · Tapis + HIIT · Canoa lago Pusiano</div></div>
+    <div style="margin-top:7px;padding:7px;background:var(--bg3);border-radius:7px;border:1px solid var(--border);">
+      <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;">SCHEMA</div>
+      <div class="week-grid" id="weekGrid"></div>
+    </div>
+  </div>
+
+  <div class="q-panel" id="tab-boss">
+    <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--orange);letter-spacing:2px;margin-bottom:6px;">GOBLIN DI OGGI</div>
+    <div class="boss-card" style="border:1px solid var(--orange);background:rgba(240,160,64,.03);">
+      <div style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:2px;" id="gobName">—</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:5px;" id="gobDesc">—</div>
+      <div style="font-size:10px;padding:5px 7px;background:var(--bg3);border-radius:6px;color:var(--muted);">⚡ <span id="gobWeakness">—</span></div>
+    </div>
+    <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--purple);letter-spacing:2px;margin-bottom:6px;">LORD PROCRASTINUS</div>
+    <div class="boss-card" style="border:1px solid var(--purple);background:rgba(144,96,208,.03);">
+      <div style="font-size:12px;font-weight:700;color:var(--purple);">💀 Lord Procrastinus — 1000 HP</div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin:5px 0 3px;">HP<span id="bossHpLabel">1000/1000</span></div>
+      <div class="boss-hp-track"><div class="boss-hp-fill" id="bossHpBar" style="width:100%;background:linear-gradient(90deg,#9060d0,#b080f0);"></div></div>
+      <div style="font-size:9px;color:var(--muted);margin-top:6px;">Segna i giorni completati:</div>
+      <div class="boss-days" id="bossDays"></div>
+    </div>
+    <div class="moena-card">
+      <div style="font-family:'Cinzel',serif;font-size:10px;font-weight:700;color:var(--gold-m);margin-bottom:2px;">🏔 Moena — 14-21 Giugno</div>
+      <div style="font-size:10px;color:var(--muted);line-height:1.5;">Non è la pausa. È la prova che funziona.</div>
+    </div>
+  </div>
+
+  <div class="q-panel" id="tab-rings">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:9px;">
+      <div class="ring-card locked" id="ring-bronzo"><div style="font-size:20px;margin-bottom:2px;">🥉</div><div style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--orange);">Bronzo</div><div style="font-size:8px;color:var(--muted);margin:2px 0;line-height:1.4;">Lv3·87kg·14gg</div><div style="font-family:'Cinzel',serif;font-size:8px;color:var(--orange);">🍽 Pasto libero</div></div>
+      <div class="ring-card locked" id="ring-argento"><div style="font-size:20px;margin-bottom:2px;">🥈</div><div style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--gold-m);">Argento</div><div style="font-size:8px;color:var(--muted);margin:2px 0;line-height:1.4;">Lv6·85kg</div><div style="font-family:'Cinzel',serif;font-size:8px;color:var(--gold-m);">🏔 Weekend</div></div>
+      <div class="ring-card locked" id="ring-oro"><div style="font-size:20px;margin-bottom:2px;">🥇</div><div style="font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:var(--red);">Oro</div><div style="font-size:8px;color:var(--muted);margin:2px 0;line-height:1.4;">Lv8·80kg</div><div style="font-family:'Cinzel',serif;font-size:8px;color:var(--red);">🏖 All-incl.</div></div>
+    </div>
+    <div style="padding:9px;background:var(--bg3);border-radius:8px;border:1px solid var(--border);">
+      <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:2px;margin-bottom:7px;">→ BRONZO</div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:2px;">Lv <span style="color:var(--gold);" id="rLv">2/3</span></div>
+      <div style="height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin-bottom:6px;"><div id="rLvBar" style="height:100%;background:var(--gold);border-radius:2px;transition:width .5s;"></div></div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:2px;">Streak <span style="color:var(--orange);" id="rStreak">4/14</span></div>
+      <div style="height:4px;background:var(--bg);border-radius:2px;overflow:hidden;margin-bottom:6px;"><div id="rStreakBar" style="height:100%;background:var(--orange);border-radius:2px;transition:width .5s;"></div></div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:2px;">Peso <span style="color:var(--green);" id="rWeight">0.9/2 kg</span></div>
+      <div style="height:4px;background:var(--bg);border-radius:2px;overflow:hidden;"><div id="rWeightBar" style="height:100%;background:var(--green);border-radius:2px;transition:width .5s;"></div></div>
+    </div>
+  </div>
+
+  <div class="q-panel" id="tab-hidden">
+    <div style="font-size:10px;color:var(--muted);margin-bottom:9px;font-style:italic;">Il Sistema osserva ciò che non dichiari.</div>
+    <div id="hiddenQuestsList"></div>
+  </div>
+
+  <div class="q-panel" id="tab-malus">
+    <div style="padding:7px 9px;background:rgba(80,200,120,.04);border:1px solid rgba(80,200,120,.14);border-radius:7px;margin-bottom:9px;font-size:10px;color:var(--green);line-height:1.5;">⚡ Giornata ferita, non fallita. 3 malus = Contrattacco ×2.</div>
+    <div class="malus-item" id="m-zero" onclick="applyMalus('m-zero',-25,50,'☠ Giornata zero')"><div class="m-check" id="chk-m-zero">✗</div><div class="q-body"><div class="q-name">☠ Giornata Zero</div><div class="q-desc">0 quest completate.</div></div><div class="q-malus-badge">-25 · +50 HP</div></div>
+    <div class="malus-item" id="m-pesi" onclick="applyMalus('m-pesi',-12,20,'⚔ Sessione saltata')"><div class="m-check" id="chk-m-pesi">✗</div><div class="q-body"><div class="q-name">⚔ Sessione saltata</div></div><div class="q-malus-badge">-12 · +20 HP</div></div>
+    <div class="malus-item" id="m-cibo" onclick="applyMalus('m-cibo',-8,15,'🍔 Fuori controllo')"><div class="m-check" id="chk-m-cibo">✗</div><div class="q-body"><div class="q-name">🍔 Abbuffata</div></div><div class="q-malus-badge">-8 · +15 HP</div></div>
+    <div class="malus-item" id="m-3gg" onclick="applyMalus('m-3gg',-5,10,'💀 3 giorni inattivi')"><div class="m-check" id="chk-m-3gg">✗</div><div class="q-body"><div class="q-name">💀 3 giorni inattivi</div></div><div class="q-malus-badge">-5 · +10 HP</div></div>
+    <div id="counterattackBox" style="display:none;padding:7px 9px;background:rgba(80,200,120,.05);border:1px solid rgba(80,200,120,.18);border-radius:7px;margin-top:7px;font-size:10px;color:var(--green);">⚡ CONTRATTACCO — prossime 3 quest ×2.</div>
+  </div>
+
+  <div class="q-panel" id="tab-integ">
+    <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;">☀️ MATTINA</div>
+    <div class="integ-item" id="i-crea" onclick="toggleInteg('i-crea')"><div class="integ-check" id="chk-i-crea">☐</div><div class="integ-name">Creatina Creapure</div><div class="integ-dose">5g</div></div>
+    <div class="integ-item" id="i-om3" onclick="toggleInteg('i-om3')"><div class="integ-check" id="chk-i-om3">☐</div><div class="integ-name">Omega-3 Vegetology</div><div class="integ-dose">2 opercoli</div></div>
+    <div class="integ-item" id="i-d3" onclick="toggleInteg('i-d3')"><div class="integ-check" id="chk-i-d3">☐</div><div class="integ-name">D3+K2MK7</div><div class="integ-dose">1 capsula</div></div>
+    <div class="integ-item" id="i-multi" onclick="toggleInteg('i-multi')"><div class="integ-check" id="chk-i-multi">☐</div><div class="integ-name">Multivit Vegetology</div><div class="integ-dose">lun/mar/gio/sab/dom</div></div>
+    <div style="font-family:'Cinzel',serif;font-size:7px;color:var(--gold);letter-spacing:2px;margin:7px 0 4px;">🌙 SERA</div>
+    <div class="integ-item" id="i-mag" onclick="toggleInteg('i-mag')"><div class="integ-check" id="chk-i-mag">☐</div><div class="integ-name">Magnesio bisglicinato</div><div class="integ-dose">2 capsule</div></div>
+    <div class="integ-item" id="i-glic" onclick="toggleInteg('i-glic')"><div class="integ-check" id="chk-i-glic">☐</div><div class="integ-name">Glicina</div><div class="integ-dose">3g</div></div>
+    <div class="integ-item" id="i-tean" onclick="toggleInteg('i-tean')"><div class="integ-check" id="chk-i-tean">☐</div><div class="integ-name">L-Teanina 200mg</div><div class="integ-dose">se serve</div></div>
+    <div class="integ-item" id="i-mela" onclick="toggleInteg('i-mela')"><div class="integ-check" id="chk-i-mela">☐</div><div class="integ-name">Melatonina</div><div class="integ-dose">ritmo fuori asse</div></div>
+  </div>
+
+  <div class="q-panel" id="tab-admin">
+    <div class="admin-box">
+      <div style="font-size:10px;color:var(--muted2);margin-bottom:7px;">⚙ Correzioni manuali — causale obbligatoria.</div>
+      <div class="admin-row">
+        <input class="admin-input" id="adminXp" type="number" placeholder="XP"/>
+        <input class="admin-input" id="adminNote" type="text" placeholder="Causale"/>
+        <button class="btn btn-sm btn-gray" onclick="manualXP()">OK</button>
+      </div>
+      <div class="divl"></div>
+      <div style="font-size:10px;color:var(--muted);line-height:1.9;">1 mag: 77XP · 88.0kg<br>2 mag: 80XP · 17k passi<br>3 mag: 75XP · 7.46km<br>4 mag: 93XP · 88.1kg<br><strong style="color:var(--gold);">325XP · Lv2 · Streak 4</strong></div>
+      <div class="divl"></div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;">
+        <button class="btn btn-sm btn-gray" onclick="exportData()">⬇ Export</button>
+        <button class="btn btn-sm btn-gray" onclick="importData()">⬆ Import</button>
+        <button class="btn btn-sm btn-danger" onclick="resetDay()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑨ PESO + DIARIO -->
+<div class="grid-2 sg">
+  <div class="card">
+    <div class="card-title">⚖ Peso</div>
+    <div style="display:flex;gap:5px;margin-bottom:6px;">
+      <input id="wInput" type="number" step="0.1" min="60" max="200" placeholder="88.1" style="flex:1;padding:5px 7px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px;outline:none;"/>
+      <button class="btn btn-sm" onclick="logWeight()">+</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px;">
+      <span style="color:var(--muted);">89</span>
+      <span style="color:var(--green);font-weight:700;" id="wDelta">0.9 kg</span>
+      <span style="color:var(--red);">80🏆</span>
+    </div>
+    <div class="w-track"><div class="w-fill" id="wFill"></div></div>
+    <div style="font-size:8px;color:var(--muted);text-align:right;margin-bottom:5px;" id="wPct">10%</div>
+    <div id="wHistory"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📖 Diario</div>
+    <textarea class="diario-textarea" id="diarioText" placeholder="1. Quest completate?&#10;2. Momento difficile?&#10;3. Cosa ha funzionato?&#10;4. Lord P. HP?&#10;5. Cosa cambi?"></textarea>
+    <div style="display:flex;gap:5px;margin-top:5px;">
+      <button class="btn btn-sm btn-purple" style="flex:1;" onclick="generaNarrazione()">⚔ Cronaca</button>
+      <button class="btn btn-sm btn-outline" onclick="salvaDiario()">💾</button>
+    </div>
+    <div class="narrazione-box" id="narrazioneBox"></div>
+  </div>
+</div>
+
+<!-- ⑩ LOG -->
+<div class="card sg">
+  <div class="card-title">📓 Log del Sistema</div>
+  <div id="logList" style="max-height:100px;overflow-y:auto;margin-bottom:7px;"></div>
+  <div style="display:flex;gap:5px;">
+    <input id="logInput" placeholder="Nota rapida..." maxlength="120" style="flex:1;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:11px;outline:none;" onkeydown="if(event.key==='Enter')addLogEntry()"/>
+    <button class="btn btn-sm" onclick="addLogEntry()">+</button>
+  </div>
+</div>
+
+<!-- ⑪ ACHIEVEMENTS -->
+<div class="card sg">
+  <div class="card-title">🏆 Prove Superate</div>
+  <div class="ach-grid">
+    <div class="ach-item unlocked" id="ach-start"><div class="ach-icon">⚔</div><div class="ach-name">Prima quest</div></div>
+    <div class="ach-item unlocked" id="ach-3"><div class="ach-icon">🔥</div><div class="ach-name">3 giorni</div></div>
+    <div class="ach-item unlocked" id="ach-lv2"><div class="ach-icon">🛡</div><div class="ach-name">Lv 2</div></div>
+    <div class="ach-item locked" id="ach-7"><div class="ach-icon">⚡</div><div class="ach-name">7 giorni</div></div>
+    <div class="ach-item locked" id="ach-14"><div class="ach-icon">🌟</div><div class="ach-name">14 giorni</div></div>
+    <div class="ach-item locked" id="ach-30"><div class="ach-icon">👑</div><div class="ach-name">30 giorni</div></div>
+    <div class="ach-item locked" id="ach-lv3"><div class="ach-icon">🗡</div><div class="ach-name">Lv 3</div></div>
+    <div class="ach-item locked" id="ach-85"><div class="ach-icon">⚖</div><div class="ach-name">85 kg</div></div>
+    <div class="ach-item locked" id="ach-80"><div class="ach-icon">🏆</div><div class="ach-name">80 kg!</div></div>
+    <div class="ach-item locked" id="ach-dungeon"><div class="ach-icon">🌑</div><div class="ach-name">Dungeon vinto</div></div>
+    <div class="ach-item locked" id="ach-boss1"><div class="ach-icon">🌀</div><div class="ach-name">Boss F.I</div></div>
+    <div class="ach-item locked" id="ach-lord"><div class="ach-icon">💀</div><div class="ach-name">Lord vinto</div></div>
+  </div>
+</div>
+</div><!-- /container -->
+
+<div id="toast" class="t-gold"></div>
+
+<!-- ASCENSIONE MODAL -->
+<div id="ascModal">
+  <div class="modal-box" style="background:var(--bg2);border:2px solid var(--purple);box-shadow:0 0 50px rgba(144,96,208,.35);">
+    <div style="font-family:'Cinzel',serif;font-size:7px;letter-spacing:3px;color:#7040a0;margin-bottom:8px;">ASCENSIONE SBLOCCATA</div>
+    <div style="font-size:28px;margin-bottom:5px;">⚡</div>
+    <div style="font-family:'Cinzel Decorative',serif;font-size:17px;color:#c090f0;margin-bottom:4px;" id="ascName">—</div>
+    <div style="font-size:11px;color:#8050b0;font-style:italic;line-height:1.65;margin-bottom:9px;" id="ascPhrase">—</div>
+    <div style="font-size:10px;color:var(--green);padding:6px;background:rgba(80,200,120,.05);border-radius:7px;margin-bottom:13px;" id="ascPrivilege">—</div>
+    <button class="btn btn-purple" onclick="closeAsc()">Il Guerriero Ascende ⚡</button>
+  </div>
+</div>
+
+<!-- LEVEL UP MODAL -->
+<div id="lvlModal">
+  <div class="modal-box" style="background:var(--bg2);border:2px solid var(--gold);box-shadow:0 0 50px rgba(240,192,64,.28);">
+    <div style="font-size:30px;margin-bottom:5px;animation:flicker 1s infinite alternate;">⚔</div>
+    <div style="font-family:'Cinzel Decorative',serif;font-size:17px;font-weight:700;color:var(--gold);margin-bottom:4px;">LEVEL UP!</div>
+    <div style="font-family:'Cinzel',serif;font-size:10px;color:var(--muted);margin-bottom:5px;" id="modalClass">—</div>
+    <div style="font-size:10px;color:var(--green);margin-bottom:13px;padding:6px;background:rgba(80,200,120,.05);border-radius:7px;" id="modalBonus">—</div>
+    <button class="btn" onclick="closeLvl()">Continua ⚔</button>
+  </div>
+</div>
+
+<!-- COMBAT MODAL -->
+<div id="combatModal">
+  <div class="modal-box" style="background:#0a0610;border:1px solid var(--dungeon-border);box-shadow:0 0 35px rgba(96,0,160,.25);">
+    <div style="font-family:'Cinzel',serif;font-size:7px;color:#7040a0;letter-spacing:3px;margin-bottom:7px;">DUNGEON — SCONTRO</div>
+    <div style="font-size:24px;margin-bottom:3px;" id="combatIcon">👹</div>
+    <div style="font-family:'Cinzel',serif;font-size:12px;font-weight:700;color:#c090f0;margin-bottom:2px;" id="combatName">—</div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:8px;" id="combatDesc">—</div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px;color:var(--muted);">HP<span id="combatHpTxt">—</span></div>
+    <div class="combat-hp-track"><div class="combat-hp-fill" id="combatHpBar" style="width:100%;background:linear-gradient(90deg,#6030a0,#b080f0);"></div></div>
+    <div style="margin:8px 0;font-size:11px;min-height:28px;color:var(--text);font-style:italic;" id="combatLog">—</div>
+    <div style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-sm" onclick="combatAttack('normal')">⚔</button>
+      <button class="btn btn-sm btn-purple" onclick="combatAttack('power')">💥</button>
+      <button class="btn btn-sm btn-green" onclick="combatAttack('dodge')">🌀</button>
+      <button class="btn btn-sm btn-gray" onclick="closeCombat()">Fuggi</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){const bg=document.getElementById('starsBg');for(let i=0;i<55;i++){const s=document.createElement('div');s.className='star';const z=Math.random()*1.7+.7;s.style.cssText=`width:${z}px;height:${z}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;--op:${(Math.random()*.45+.1).toFixed(2)};animation-delay:${(Math.random()*4).toFixed(1)}s;`;bg.appendChild(s);}})();
+
+const CLASSES=[
+  {lv:1,name:'Il Dormiente',phrase:'Prima che il Sistema ti trovasse.',privilege:''},
+  {lv:2,name:'Recluta del Varco',phrase:'Hai varcato la soglia. Nessuno torna indietro.',privilege:'Accesso al Sistema attivato.'},
+  {lv:3,name:'Cacciatore in Ascesa',phrase:'Il corpo comincia a ricordare chi deve essere.',privilege:'Anello di Bronzo sbloccabile.'},
+  {lv:4,name:'Guerriero del Dungeon',phrase:'Hai imparato a combattere nei giorni grigi.',privilege:'+1 pasto libero tattico al mese.'},
+  {lv:5,name:'Spezzacatene',phrase:'Le vecchie abitudini non hanno più presa su di te.',privilege:'Dungeon Days valgono doppio XP.'},
+  {lv:6,name:'Varcatore dell\'Impossibile',phrase:'Dove gli altri vedono il muro, tu vedi il varco.',privilege:'Anello d\'Argento sbloccabile.'},
+  {lv:7,name:'Asceso',phrase:'Il Sistema ti riconosce. Il corpo lo dimostra.',privilege:'Accesso al rango finale.'},
+  {lv:8,name:'Il Guerriero',phrase:'Non è un titolo. È quello che sei diventato.',privilege:'Anello d\'Oro. Fine della campagna. Inizio della leggenda.'},
+];
+const DUNGEONS=[
+  {type:'Dungeon della Notte Corta',desc:'Il Sistema rileva sonno insufficiente. Le ombre sono più dense. Eppure il guerriero che agisce nel buio è quello che cresce più in fretta.',trigger:'sonno_scarso'},
+  {type:'Dungeon della Nebbia Grigia',desc:'Energia bassa, motivazione assente. Questo è il dungeon più importante. Qui si decide chi sei davvero.',trigger:'energia_bassa'},
+  {type:'Dungeon del Caos',desc:'L\'agenda è imprevedibile. Il guerriero non aspetta condizioni ideali — le crea.',trigger:'agenda_caotica'},
+  {type:'Dungeon del Peso',desc:'Il corpo porta i segni delle battaglie. Recuperare non è cedere — è prepararsi all\'offensiva.',trigger:'corpo_pesante'},
+  {type:'Dungeon del Fuoco Lento',desc:'Carico su più fronti. Il Sistema assegna il protocollo minimo per non perdere terreno.',trigger:'combo'},
+];
+const PROTOCOLS={
+  fullpower:{name:'FULL POWER',color:'var(--green)',bg:'rgba(80,200,120,.07)',border:'rgba(80,200,120,.28)',tag:'PROTOCOLLO ASSEGNATO',text:'Le condizioni sono favorevoli. Non è il momento di conservare — è il momento di conquistare. Ogni quest completata oggi è un colpo diretto al cuore del nemico.'},
+  sopravvivenza:{name:'SOPRAVVIVENZA',color:'var(--orange)',bg:'rgba(240,160,64,.07)',border:'rgba(240,160,64,.28)',tag:'PROTOCOLLO ASSEGNATO',text:'Il Sistema non abbassa le aspettative — le adatta. Obiettivo oggi: nessuna giornata zero. Piccolo batte sempre vuoto.'},
+  bossfight:{name:'BOSS FIGHT',color:'var(--red)',bg:'rgba(224,80,80,.07)',border:'rgba(224,80,80,.28)',tag:'PROTOCOLLO CRITICO',text:'Condizioni avverse su più fronti. Una cosa sola conta oggi: non cedere terreno. Il boss non avrà soddisfazione.'},
+  recovery:{name:'RECOVERY PROTOCOL',color:'var(--blue)',bg:'rgba(80,144,224,.07)',border:'rgba(80,144,224,.28)',tag:'PROTOCOLLO ASSEGNATO',text:'Il corpo va protetto, non spinto. Il riposo attivo è parte dell\'ascensione. Muoviti con gentilezza. Preserva la streak.'},
+  dungeon:{name:'DUNGEON DAY',color:'#c090f0',bg:'rgba(96,0,160,.1)',border:'rgba(144,96,208,.38)',tag:'⚠ PROTOCOLLO DUNGEON',text:'Dungeon rilevato. Queste sono le giornate che separano i guerrieri dagli altri. Non ti serve motivazione — ti serve la cornice.'},
+};
+const MISSIONS={
+  fullpower:{main:'Porta a termine la sessione di allenamento prevista. Nessuna scorciatoia.',secondary:['Peso del mattino registrato','Idratazione — 2.5L','Cena senza caos alimentare'],fail:'Nessuna giornata zero. Il Sistema osserva.'},
+  sopravvivenza:{main:'Un\'azione concreta prima che la giornata prenda il controllo. Borsa, movimento, niente zero.',secondary:['Anti-borsa completato','20 minuti di movimento','Telefono fuori dalla camera'],fail:'Non cedere terreno. Piccolo batte vuoto.'},
+  bossfight:{main:'Sopravvivi alla giornata senza perdere il controllo. Il boss aspetta un cedimento.',secondary:['Acqua — minimo 1.5L','Una cosa sola fatta bene','Una riga nel diario prima di dormire'],fail:'La giornata non è finita finché non dormi.'},
+  recovery:{main:'Recupero attivo: muoviti con gentilezza, proteggi il sonno, mantieni la streak.',secondary:['Stretching 10 minuti','Cena leggera','Letto entro mezzanotte'],fail:'Recuperare non è cedere. È l\'arma che pochi usano.'},
+  dungeon:{main:'Completa almeno una quest significativa in condizioni avverse. Un passo alla volta.',secondary:['Una sessione di movimento — qualsiasi forma','Niente sabotaggio serale','Documenta nel log'],fail:'Un Dungeon Day conquistato vale tre giorni normali.'},
+};
+const HIDDEN_QUESTS=[
+  {id:'hq-sonno3',icon:'🌙',name:'Custode del Sonno',desc:'3 notti consecutive a letto entro mezzanotte.',reward:'+25 XP, +1 WIS',xpReward:25,statBonus:{stat:'WIS',val:1},target:3,counter:'sonnoStreak'},
+  {id:'hq-acqua7',icon:'💧',name:'Rito dell\'Acqua',desc:'7 giorni con acqua registrata.',reward:'+20 XP',xpReward:20,target:7,counter:'acquaStreak'},
+  {id:'hq-stretch5',icon:'🧘',name:'Il Guerriero si Allunga',desc:'5 sessioni di stretching completate.',reward:'+30 XP, +1 DEX',xpReward:30,statBonus:{stat:'DEX',val:1},target:5,counter:'stretchCount'},
+  {id:'hq-nuoto3',icon:'🏊',name:'Nuotatore del Varco',desc:'3 nuotate in una settimana.',reward:'+35 XP, +1 CON',xpReward:35,statBonus:{stat:'CON',val:1},target:3,counter:'nuotoCount'},
+  {id:'hq-dungeon1',icon:'⚔',name:'Battuto nel Dungeon',desc:'Allenamento completato con sonno sotto 6 ore.',reward:'+40 XP + memoria',xpReward:40,target:1,counter:'dungeonVinti'},
+  {id:'hq-tempesta',icon:'🌧',name:'La Tempesta non Ferma',desc:'Outdoor completato con meteo avverso.',reward:'+45 XP',xpReward:45,target:1,counter:'tempestaVinta'},
+  {id:'hq-zero7',icon:'🛡',name:'Settimana Inviolata',desc:'7 giorni senza giornata zero.',reward:'+50 XP, +1 STR',xpReward:50,statBonus:{stat:'STR',val:1},target:7,counter:'noZeroStreak'},
+  {id:'hq-peso5',icon:'⚖',name:'Il Rito della Misura',desc:'5 pesate consecutive registrate.',reward:'+15 XP',xpReward:15,target:5,counter:'pesoStreak'},
+];
+const GOBLINS=[
+  {name:'👟 Goblin della Borsa Vuota',desc:'Si materializza tra il letto e la porta.',weakness:'Prepara la borsa — 60 secondi'},
+  {name:'🛋 Goblin del Divano',desc:'Appare 3 minuti dopo che sei tornato.',weakness:'Cambiarsi PRIMA di sedersi.'},
+  {name:'⏰ Goblin del Momento Perfetto',desc:'Non è il momento giusto.',weakness:'Inizia con 2 minuti. Scarpe adesso.'},
+  {name:'🍔 Goblin dell\'Abbondanza',desc:'Abbonda — tanto è sano.',weakness:'Servi il piatto, chiudi i contenitori.'},
+];
+const ENEMIES=[
+  {icon:'👹',name:'Orco della Pigrizia',desc:'Porta il peso di mille giorni saltati.',hp:60,maxHp:60,atk:15,xp:35},
+  {icon:'🧟',name:'Non-Morto della Dieta',desc:'Si nutre di rimpianti.',hp:45,maxHp:45,atk:10,xp:25},
+  {icon:'🐉',name:'Drago dell\'Abitudine',desc:'Conosce le tue debolezze.',hp:80,maxHp:80,atk:20,xp:50},
+  {icon:'👻',name:'Fantasma del Divano',desc:'Invisibile finché non ti siedi.',hp:30,maxHp:30,atk:8,xp:20},
+];
+const DAILY_QUESTS=[
+  {id:'q-mov',icon:'🏃',name:'Movimento del giorno',xp:40,msg:'🏃 Sessione completata!'},
+  {id:'q-cibo',icon:'🥗',name:'Alimentazione',xp:25,msg:'🥗 Alimentazione OK!'},
+  {id:'q-acqua',icon:'💧',name:'Acqua 2.5L',xp:10,msg:'💧 2.5L completati!'},
+  {id:'q-sonno',icon:'🌙',name:'Sonno (mezzanotte + 7h)',xp:20,msg:'🌙 Notte del Guerriero!'},
+  {id:'q-tel',icon:'📵',name:'Tel. fuori camera',xp:8,msg:'📵 Telefono fuori!'},
+  {id:'q-borsa',icon:'👟',name:'Anti-Borsa',xp:5,msg:'👟 Borsa pronta!'},
+  {id:'q-peso-q',icon:'⚖',name:'Peso mattino',xp:5,msg:'⚖ Peso registrato!'},
+];
+const LEVELS=[
+  {lv:1,xp:0,next:250},{lv:2,xp:250,next:500},{lv:3,xp:500,next:800},
+  {lv:4,xp:800,next:1150},{lv:5,xp:1150,next:1600},{lv:6,xp:1600,next:2150},
+  {lv:7,xp:2150,next:2800},{lv:8,xp:2800,next:99999},
+];
+const STAT_META={
+  STR:{label:'FORZA',icon:'⚔',color:'var(--red)'},CON:{label:'COST.',icon:'🛡',color:'var(--purple)'},
+  DEX:{label:'DESTREZ.',icon:'🏹',color:'var(--green)'},INT:{label:'INT.',icon:'📜',color:'var(--blue)'},
+  WIS:{label:'SAGGEZZA',icon:'🔮',color:'var(--gold)'},CHA:{label:'CARISMA',icon:'✨',color:'var(--orange)'},
+};
+const INIT={
+  xp:325,xpOggi:0,level:2,streak:4,
+  quests:{},maluses:{},malusCount:0,weekMalusCount:0,
+  bossDays:new Array(56).fill(false),bossHp:1000,weekQuestsDone:4,bossesDefeated:[],
+  logs:[
+    {icon:'👑',text:'LEVEL UP! Lv 2 — Recluta del Varco',time:'4 mag'},
+    {icon:'⚔',text:'4 mag — Push day · 88.1 kg · 93 XP',time:'4 mag'},
+    {icon:'🌧',text:'5 mag — 10km tapis, sonno corto, giornata grigia. Dungeon conquistato.',time:'5 mag'},
+  ],
+  weightLog:[{v:88.0,date:'1 mag'},{v:88.1,date:'4 mag'}],
+  diario:'',counterattackActive:false,counterattackLeft:0,
+  stats:{STR:11,CON:8,DEX:12,INT:14,WIS:9,CHA:10},
+  scanState:{},currentProtocol:null,lastScanDay:-1,
+  hqCounters:{sonnoStreak:0,acquaStreak:0,stretchCount:0,nuotoCount:0,dungeonVinti:0,tempestaVinta:0,noZeroStreak:0,pesoStreak:0},
+  hqClaimed:{},
+  dungeonMemories:[{type:'Dungeon della Notte Corta',date:'5 mag',result:'10km tapis 6.5km/h · nessun cedimento · zero caos alimentare · zero pane. Il limite percepito del mattino smentito dai fatti.'}],
+};
+let S=JSON.parse(JSON.stringify(INIT));
+let combat={active:false,enemy:null,playerHp:100};
+
+function load(){
+  try{const s=localStorage.getItem('qb_sistema_v91');if(s){const p=JSON.parse(s);S={...INIT,...p};['stats','hqCounters','hqClaimed'].forEach(k=>{if(!S[k])S[k]={...INIT[k]};});if(!S.dungeonMemories)S.dungeonMemories=[...INIT.dungeonMemories];}}catch(e){}
+  if(S.bossDays.length<56)S.bossDays=[...S.bossDays,...new Array(56-S.bossDays.length).fill(false)];
+}
+function save(){
+  localStorage.setItem('qb_sistema_v91',JSON.stringify(S));
+  const el=document.getElementById('saveStatus');
+  if(el)el.textContent='💾 '+new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+}
+
+function render(){
+  renderHeader();renderOggi();renderXP();renderStats();renderStreak();
+  renderBoss();renderWeight();renderAchievements();renderRings();renderLog();renderWeekGrid();renderClassTimeline();
+}
+
+function renderHeader(){
+  const cls=CLASSES.find(c=>c.lv===S.level)||CLASSES[1];
+  document.getElementById('lvDisp').textContent=S.level;
+  document.getElementById('lvDisp2').textContent=S.level;
+  document.getElementById('charClassName').textContent=cls.name;
+  document.getElementById('streakDisp').textContent=S.streak;
+  document.getElementById('bossHpDisp').textContent=S.bossHp;
+  const days=Math.max(1,Math.ceil(S.bossDays.filter(Boolean).length/7));
+  document.getElementById('weekDisp').textContent=Math.min(8,days);
+  const wl=S.weightLog||[];
+  document.getElementById('weightBadge').textContent='⚖ '+(wl.length?wl[wl.length-1].v.toFixed(1):89)+' kg';
+}
+
+function renderClassTimeline(){
+  const tl=document.getElementById('classTimeline');if(!tl)return;
+  // Mostra lv attuale -2 / +2, con ellissi se necessario
+  const lv=S.level;
+  const start=Math.max(1,lv-1);
+  const end=Math.min(8,lv+2);
+  let html='';
+  if(start>1) html+=`<div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted2);padding-left:0;margin-bottom:6px;opacity:.5;">↑ Lv 1–${start-1}</div>`;
+  CLASSES.slice(start-1,end).forEach(c=>{
+    const cur=c.lv===lv,ach=c.lv<lv;
+    html+=`<div class="class-item${cur?' current':ach?' achieved':''}">
+      <div class="class-lv">LV ${c.lv}</div>
+      <div class="class-name">${c.name}</div>
+      <div class="class-phrase">${c.phrase}</div>
+      ${cur&&c.privilege?`<div class="class-privilege">✦ ${c.privilege}</div>`:''}
+    </div>`;
+  });
+  if(end<8) html+=`<div style="font-family:'Cinzel',serif;font-size:8px;color:var(--muted2);padding-left:0;margin-top:4px;opacity:.5;">↓ Lv ${end+1}–8</div>`;
+  tl.innerHTML=html;
+}
+
+function renderOggi(){
+  document.getElementById('xpOggiVal').textContent=S.xpOggi||0;
+  const done=DAILY_QUESTS.filter(q=>S.quests[q.id]).length;
+  document.getElementById('questOggiVal').textContent=done+'/'+DAILY_QUESTS.length;
+  const wl=S.weightLog||[];
+  document.getElementById('pesoOggiVal').textContent=wl.length?wl[wl.length-1].v.toFixed(1):'—';
+  const l7=wl.slice(-7);
+  document.getElementById('pesomediaVal').textContent=l7.length>=2?(l7.reduce((a,b)=>a+b.v,0)/l7.length).toFixed(1):'—';
+  document.getElementById('oggiQuests').innerHTML=DAILY_QUESTS.map(q=>{
+    const d=!!S.quests[q.id];
+    return `<div class="oq${d?' done':''}" onclick="toggleQuest('${q.id}',${q.xp},'${q.msg}')"><div class="oq-check">${d?'✓':'☐'}</div><div class="oq-name">${q.icon} ${q.name}</div><div class="oq-xp">+${q.xp}</div></div>`;
+  }).join('');
+}
+
+function renderXP(){
+  const l=LEVELS.find(x=>x.lv===S.level)||LEVELS[LEVELS.length-1];
+  const pct=Math.min(100,Math.round(((S.xp-l.xp)/(l.next-l.xp))*100));
+  document.getElementById('xpDisp').textContent=S.xp+'/'+l.next;
+  document.getElementById('xpBar').style.width=pct+'%';
+  const nl=LEVELS.find(x=>x.lv===S.level+1);
+  document.getElementById('nextLv').textContent=nl?'→ Lv '+(S.level+1)+' · '+(l.next-S.xp)+' XP':'MAX';
+}
+
+function renderStats(){
+  const c=document.getElementById('statsContainer');c.innerHTML='';
+  Object.entries(S.stats).forEach(([k,v])=>{
+    const m=STAT_META[k];const mod=Math.floor((v-10)/2);
+    c.innerHTML+=`<div class="stat-row"><span class="stat-icon">${m.icon}</span><span class="stat-name">${m.label}</span><div class="stat-track"><div class="stat-fill" style="width:${Math.round(v/20*100)}%;background:${m.color};"></div></div><span class="stat-num" style="color:${m.color}">${v}</span><span class="stat-mod">${(mod>=0?'+':'')+mod}</span></div>`;
+  });
+}
+
+function renderStreak(){
+  document.getElementById('streakNum').textContent=S.streak;
+  document.getElementById('streakDisp').textContent=S.streak;
+  const el=document.getElementById('streakMsg');
+  if(S.streak<7)el.textContent='7 gg = +40 XP';
+  else if(S.streak<14)el.textContent='🔥 '+S.streak+'/14';
+  else el.textContent='⚡ '+S.streak+' gg!';
+  document.getElementById('rStreak').textContent=S.streak+'/14';
+}
+
+function renderBoss(){
+  const d=new Date().getDay();const g=GOBLINS[d%4];
+  document.getElementById('gobName').textContent=g.name;
+  document.getElementById('gobDesc').textContent=g.desc;
+  document.getElementById('gobWeakness').textContent=g.weakness;
+  document.getElementById('bossHpBar').style.width=(S.bossHp/10)+'%';
+  document.getElementById('bossHpLabel').textContent=S.bossHp+'/1000';
+  document.getElementById('bossHpDisp').textContent=S.bossHp;
+  const con=document.getElementById('bossDays');con.innerHTML='';
+  const today=new Date().getDate()-1;
+  for(let i=0;i<56;i++){
+    const el=document.createElement('div');
+    el.className='boss-day'+(S.bossDays[i]?' hit':'')+(i===today?' today':'');
+    el.textContent=S.bossDays[i]?'⚔':(i+1);
+    el.onclick=()=>{S.bossDays[i]=!S.bossDays[i];S.bossHp=Math.max(0,Math.min(1000,S.bossHp+(S.bossDays[i]?-8:8)));save();render();};
+    con.appendChild(el);
+  }
+}
+
+function renderWeight(){
+  const wl=S.weightLog||[];if(!wl.length)return;
+  const START=89,TARGET=80;const cur=wl[wl.length-1].v;
+  const lost=Math.max(0,+(START-cur).toFixed(1));const pct=Math.min(100,Math.round(lost/(START-TARGET)*100));
+  document.getElementById('wDelta').textContent=lost.toFixed(1)+' kg';
+  document.getElementById('wFill').style.width=pct+'%';
+  document.getElementById('wPct').textContent=pct+'%';
+  document.getElementById('rWeight').textContent=lost.toFixed(1)+'/2 kg';
+  const rWB=document.getElementById('rWeightBar');if(rWB)rWB.style.width=Math.min(100,lost/2*100)+'%';
+  document.getElementById('wHistory').innerHTML=wl.slice(-4).reverse().map(l=>`<div class="w-entry"><span>${l.date}</span><span style="color:var(--gold);font-weight:700;">${l.v.toFixed(1)} kg</span><span style="color:var(--muted);font-size:8px;">${l.v<=TARGET?'🏆':l.v<=85?'✅':''}</span></div>`).join('');
+}
+
+function renderAchievements(){
+  const ach=(id,c)=>{const e=document.getElementById('ach-'+id);if(e&&c){e.classList.remove('locked');e.classList.add('unlocked');}};
+  const wl=S.weightLog||[];const minW=wl.length?Math.min(...wl.map(x=>x.v)):89;
+  ach('start',true);ach('3',S.streak>=3);ach('7',S.streak>=7);ach('14',S.streak>=14);ach('30',S.streak>=30);
+  ach('lv2',S.level>=2);ach('lv3',S.level>=3);ach('85',minW<=85);ach('80',minW<=80);
+  ach('dungeon',(S.dungeonMemories||[]).length>0);ach('boss1',S.bossesDefeated.includes('fase1'));ach('lord',S.bossHp<=0);
+}
+
+function renderRings(){
+  const wl=S.weightLog||[];const lost=wl.length?Math.max(0,+(89-wl[wl.length-1].v).toFixed(1)):0;
+  document.getElementById('rLv').textContent=S.level+'/3';
+  const rLB=document.getElementById('rLvBar');if(rLB)rLB.style.width=Math.min(100,(S.level-1)/2*100)+'%';
+  const rSB=document.getElementById('rStreakBar');if(rSB)rSB.style.width=Math.min(100,S.streak/14*100)+'%';
+  const setR=(id,u)=>{const e=document.getElementById('ring-'+id);if(!e)return;e.classList.toggle('locked',!u);e.classList.toggle('unlocked',u);};
+  setR('bronzo',S.level>=3&&S.streak>=14&&lost>=2);setR('argento',S.level>=6&&lost>=4);setR('oro',S.level>=8&&lost>=9);
+}
+
+function renderLog(){
+  const el=document.getElementById('logList');if(!el)return;
+  el.innerHTML=(S.logs||[]).slice(-10).reverse().map(l=>`<div class="log-entry"><span style="font-size:11px;width:14px;">${l.icon||'📓'}</span><span style="flex:1;color:var(--text);line-height:1.35;">${l.text}</span><span style="color:var(--muted);font-size:8px;white-space:nowrap;">${l.time||''}</span></div>`).join('');
+}
+
+function renderWeekGrid(){
+  const g=document.getElementById('weekGrid');if(!g)return;
+  const days=['L','M','M','G','V','S','D'];
+  const plan=['Push','Cardio','Legs','Cardio','Pull','Out.','Rip.'];
+  const colors=['var(--red)','var(--green)','var(--blue)','var(--green)','var(--purple)','var(--orange)','var(--muted)'];
+  g.innerHTML=days.map((d,i)=>`<div class="week-day"><div style="font-family:'Cinzel',serif;font-size:7px;color:var(--muted);">${d}</div><div style="font-family:'Cinzel',serif;font-size:7px;color:${colors[i]}">${plan[i]}</div></div>`).join('');
+}
+
+function renderHiddenQuests(){
+  const list=document.getElementById('hiddenQuestsList');if(!list)return;
+  list.innerHTML=HIDDEN_QUESTS.map(hq=>{
+    const cnt=S.hqCounters[hq.counter]||0;const claimed=S.hqClaimed[hq.id];
+    const unlocked=cnt>=hq.target&&!claimed;const pct=Math.min(100,Math.round(cnt/hq.target*100));
+    let cls='hq-item'+(claimed?' claimed':unlocked?' unlocked':cnt>0?'':' locked');
+    return `<div class="${cls}"${unlocked?` onclick="claimHQ('${hq.id}')"`:''}><div class="hq-icon">${hq.icon}</div><div class="hq-body"><div class="hq-name">${unlocked?'✦ ':claimed?'✓ ':''} ${hq.name}</div><div class="hq-desc">${hq.desc}</div>${!claimed?`<div class="hq-track"><div class="hq-fill" style="width:${pct}%;"></div></div><div class="hq-progress">${cnt}/${hq.target}</div>`:''}</div><div class="hq-reward">${hq.reward}</div></div>`;
+  }).join('');
+}
+
+// SCANSIONE
+function selectScan(el){
+  const f=el.dataset.field;
+  document.querySelectorAll(`.scan-opt[data-field="${f}"]`).forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');S.scanState[f]=el.dataset.val;
+}
+function runScansione(){
+  const{sonno,energia,corpo,agenda}=S.scanState;
+  if(!sonno||!energia||!corpo||!agenda){toast('Completa tutti i parametri','t-red');return;}
+  const proto=computeProtocol(sonno,energia,corpo,agenda);
+  S.currentProtocol=proto;
+  const p=PROTOCOLS[proto];
+  document.getElementById('protocolloBox').innerHTML=`<div style="border:1px solid ${p.border};background:${p.bg};border-radius:8px;padding:10px 12px;margin-top:8px;"><div class="proto-tag" style="color:${p.color};letter-spacing:2px;">${p.tag}</div><div class="proto-name" style="color:${p.color};">${p.name}</div><div class="proto-text">${p.text}</div></div>`;
+  document.getElementById('protocolloBox').classList.add('show');
+  const m=MISSIONS[proto];
+  document.getElementById('missMain').textContent=m.main;
+  document.getElementById('missSecondarie').innerHTML=m.secondary.map(s=>`<div class="miss-item" onclick="this.classList.toggle('done');this.querySelector('.miss-check').textContent=this.classList.contains('done')?'✓':'☐'"><div class="miss-check">☐</div><span>${s}</span></div>`).join('');
+  document.getElementById('missFailBox').textContent='⚠ '+m.fail;
+  document.getElementById('missioneCard').style.display='block';
+  const dung=getDungeon(sonno,energia,corpo,agenda);
+  if(dung)showDungeon(dung);
+  document.getElementById('scanCard').classList.add('active');
+  save();toast('⚡ Protocollo '+p.name,'t-purple');
+}
+function computeProtocol(s,e,c,a){
+  const bad=x=>['scarso','bassa','pesante','caotica'].includes(x);
+  const n=[s,e,c,a].filter(bad).length;
+  if(n>=3)return 'dungeon';if(n===2)return 'bossfight';
+  if(s==='scarso'||e==='bassa')return 'sopravvivenza';
+  if(c==='pesante')return 'recovery';return 'fullpower';
+}
+function getDungeon(s,e,c,a){
+  if(s==='scarso')return DUNGEONS[0];if(e==='bassa'&&c==='pesante')return DUNGEONS[4];
+  if(e==='bassa')return DUNGEONS[1];if(a==='caotica')return DUNGEONS[2];
+  if(c==='pesante')return DUNGEONS[3];return null;
+}
+function showDungeon(d){
+  document.getElementById('dungeonType').textContent=d.type;
+  document.getElementById('dungeonDesc').textContent=d.desc;
+  const mem=(S.dungeonMemories||[]).find(m=>m.type===d.type);
+  document.getElementById('dungeonMemory').textContent=mem?'"'+d.type+' — già conquistato il '+mem.date+'. '+mem.result+'. Il Sistema conferma: puoi farcela."':'"Prima volta in questo dungeon. Il Sistema non conosce ancora il tuo limite."';
+  document.getElementById('dungeonCard').classList.add('show');
+  document.body.classList.add('dungeon-mode');
+}
+function acceptDungeon(){addLog('⚔','Dungeon accettato: '+document.getElementById('dungeonType').textContent);save();toast('⚔ Dungeon accettato','t-purple');}
+
+// HIDDEN QUESTS
+function claimHQ(id){
+  const hq=HIDDEN_QUESTS.find(h=>h.id===id);if(!hq||S.hqClaimed[id])return;
+  S.hqClaimed[id]=true;S.xp+=hq.xpReward;S.xpOggi=(S.xpOggi||0)+hq.xpReward;
+  if(hq.statBonus)S.stats[hq.statBonus.stat]=Math.min(20,(S.stats[hq.statBonus.stat]||10)+hq.statBonus.val);
+  checkLevelUp();floatXP(hq.xpReward,'#c090f0');
+  const b=document.getElementById('hqBanner');
+  document.getElementById('hqBannerTitle').textContent=hq.name;
+  document.getElementById('hqBannerReward').textContent=hq.reward;
+  b.classList.add('show');setTimeout(()=>b.classList.remove('show'),3200);
+  addLog('🔮','QUEST NASCOSTA: '+hq.name+' — '+hq.reward);
+  save();render();renderHiddenQuests();
+}
+function incrementHQ(counter,amount=1){
+  S.hqCounters[counter]=(S.hqCounters[counter]||0)+amount;
+  HIDDEN_QUESTS.forEach(hq=>{if(hq.counter===counter&&S.hqCounters[counter]>=hq.target&&!S.hqClaimed[hq.id]){setTimeout(()=>{const b=document.getElementById('hqBanner');document.getElementById('hqBannerTitle').textContent='✦ '+hq.name+' pronta!';document.getElementById('hqBannerReward').textContent=hq.reward;b.classList.add('show');setTimeout(()=>b.classList.remove('show'),3000);},600);}});
+}
+
+// QUESTS
+function toggleQuest(id,xp,msg){
+  if(S.quests[id])return;S.quests[id]=true;
+  let mult=1;
+  if(S.counterattackActive&&S.counterattackLeft>0){mult=2;S.counterattackLeft--;if(!S.counterattackLeft)S.counterattackActive=false;}
+  if(S.currentProtocol==='dungeon'&&S.level>=5)mult=Math.max(mult,2);
+  const actual=xp*mult;S.xp+=actual;S.xpOggi=(S.xpOggi||0)+actual;
+  if(id==='q-acqua')incrementHQ('acquaStreak');
+  if(id==='q-peso-q')incrementHQ('pesoStreak');
+  if(id==='q-sonno'){S.hqCounters.sonnoStreak=(S.hqCounters.sonnoStreak||0)+1;S.hqCounters.noZeroStreak=(S.hqCounters.noZeroStreak||0)+1;}
+  if(id==='q-mov'&&S.scanState.sonno==='scarso')incrementHQ('dungeonVinti');
+  if(id==='q-nuoto3')incrementHQ('nuotoCount');
+  if(['q-pesi3','q-nuoto3','q-cardio2','q-outdoor'].includes(id))S.weekQuestsDone=(S.weekQuestsDone||0)+1;
+  checkLevelUp();addLog('⚔',msg.replace('!','')+(mult>1?' ×'+mult:''));
+  floatXP(actual,'var(--gold)');save();render();toast(mult>1?msg+' ×'+mult+'!':msg,'t-gold');
+  if(Object.values(S.quests).filter(Boolean).length>=12&&!S.bossesDefeated.includes('fase1')){S.bossesDefeated.push('fase1');S.stats.WIS=Math.min(20,S.stats.WIS+1);setTimeout(()=>toast('🌑 BOSS F.I! +1 WIS!','t-purple'),700);save();render();}
+}
+function applyMalus(id,xpDelta,bossHeal,msg){
+  if(!confirm('Registrare: '+msg+'?'))return;if(S.maluses[id])return;
+  S.maluses[id]=true;S.xp=Math.max(0,S.xp+xpDelta);S.xpOggi=Math.max(0,(S.xpOggi||0)+xpDelta);
+  S.bossHp=Math.min(1000,S.bossHp+bossHeal);S.malusCount=(S.malusCount||0)+1;S.weekMalusCount=(S.weekMalusCount||0)+1;
+  if(id==='m-zero'){S.hqCounters.noZeroStreak=0;S.hqCounters.acquaStreak=0;}
+  if(S.weekMalusCount>=3&&!S.counterattackActive){S.counterattackActive=true;S.counterattackLeft=3;setTimeout(()=>toast('⚡ CONTRATTACCO!','t-purple'),500);}
+  document.getElementById(id)?.classList.add('applied');const chk=document.getElementById('chk-'+id);if(chk)chk.textContent='✓';
+  document.getElementById('counterattackBox').style.display=S.weekMalusCount>=3?'block':'none';
+  floatXP(xpDelta,'var(--red)');addLog('💀',msg+' ('+xpDelta+' XP)');save();render();toast(msg,'t-red');
+}
+function addStreak(){
+  S.streak++;
+  if(S.streak===7){S.xp+=40;S.xpOggi=(S.xpOggi||0)+40;checkLevelUp();floatXP(40,'var(--orange)');toast('🔥 Streak 7! +40 XP','t-gold');addLog('🔥','Streak 7 +40 XP');}
+  else if(S.streak===14){S.xp+=100;S.xpOggi=(S.xpOggi||0)+100;checkLevelUp();if(!S.bossesDefeated.includes('fase2'))S.bossesDefeated.push('fase2');floatXP(100,'#c090f0');toast('⚡ Streak 14! +100 XP','t-purple');addLog('⚡','Streak 14 +100 XP');}
+  else if(S.streak===30){S.xp+=250;checkLevelUp();floatXP(250,'var(--gold)');toast('🌟 Streak 30! +250 XP','t-gold');addLog('🌟','Streak 30 +250 XP');}
+  else toast('🔥 '+S.streak,'t-gold');
+  save();render();
+}
+function resetStreak(){if(confirm('Azzerare streak?')){S.streak=0;S.hqCounters.noZeroStreak=0;save();render();toast('💀 Streak perso.','t-red');}}
+
+function checkLevelUp(){
+  LEVELS.forEach(l=>{
+    if(S.xp>=l.next&&S.level===l.lv&&l.lv<8){
+      S.level=l.lv+1;const cls=CLASSES.find(c=>c.lv===S.level)||CLASSES[CLASSES.length-1];
+      document.getElementById('ascName').textContent=cls.name;
+      document.getElementById('ascPhrase').textContent=cls.phrase;
+      document.getElementById('ascPrivilege').textContent=cls.privilege;
+      document.getElementById('ascModal').classList.add('show');
+      document.getElementById('modalClass').textContent='Sei ora '+cls.name;
+      document.getElementById('modalBonus').textContent=S.level===8?'+2 stat — sei IL GUERRIERO':'+1 stat a scelta';
+      addLog('👑','ASCENSIONE! Lv '+S.level+' — '+cls.name);
+    }
+  });
+}
+function closeLvl(){document.getElementById('lvlModal').classList.remove('show');}
+function closeAsc(){document.getElementById('ascModal').classList.remove('show');document.getElementById('lvlModal').classList.add('show');}
+
+// COMBAT (dungeon only)
+function startCombat(){
+  const e=ENEMIES[Math.floor(Math.random()*ENEMIES.length)];
+  combat={active:true,enemy:{...e},playerHp:100};
+  ['Icon','Name','Desc'].forEach(k=>document.getElementById('combat'+k).textContent=e[k.toLowerCase()]||e.icon||e.name||e.desc);
+  document.getElementById('combatHpBar').style.width='100%';
+  document.getElementById('combatHpTxt').textContent=e.hp+'/'+e.maxHp;
+  document.getElementById('combatLog').textContent='Il nemico emerge dall\'oscurità...';
+  document.getElementById('combatModal').classList.add('show');
+}
+function combatAttack(type){
+  if(!combat.active)return;const e=combat.enemy;let dmg=0,msg='';
+  if(type==='normal'){dmg=Math.floor(Math.random()*15)+8;msg='Colpisci: '+dmg+'!';}
+  else if(type==='power'){if(Math.random()>.35){dmg=Math.floor(Math.random()*25)+15;msg='CRITICO! '+dmg+'!';}else msg='Mancato!';}
+  else{document.getElementById('combatLog').textContent='Schivi!';setTimeout(()=>{if(!combat.active)return;const a=Math.floor(e.atk*.3);combat.playerHp-=a;document.getElementById('combatLog').textContent='Parziale: '+a+' danni. HP: '+Math.max(0,combat.playerHp);},600);return;}
+  e.hp=Math.max(0,e.hp-dmg);
+  const pct=Math.max(0,Math.round(e.hp/e.maxHp*100));
+  document.getElementById('combatHpBar').style.width=pct+'%';document.getElementById('combatHpTxt').textContent=e.hp+'/'+e.maxHp;
+  if(e.hp<=0){combat.active=false;S.xp+=e.xp;S.xpOggi=(S.xpOggi||0)+e.xp;incrementHQ('dungeonVinti');
+    const dt=document.getElementById('dungeonType').textContent;
+    S.dungeonMemories=S.dungeonMemories||[];S.dungeonMemories.push({type:dt,date:new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'short'}),result:'Combattimento vinto +'+e.xp+' XP'});
+    checkLevelUp();document.getElementById('combatLog').textContent='VITTORIA! +'+e.xp+' XP';addLog('⚔','Vittoria dungeon +'+e.xp+' XP');
+    setTimeout(()=>{document.getElementById('combatModal').classList.remove('show');save();render();toast('⚔ +'+e.xp+' XP','t-gold');},1500);return;}
+  const a=Math.floor(Math.random()*e.atk*.5)+Math.floor(e.atk*.5);combat.playerHp-=a;
+  document.getElementById('combatLog').textContent=msg+' Contrattacca: '+a+'. HP: '+Math.max(0,combat.playerHp);
+  if(combat.playerHp<=0){combat.active=false;S.bossHp=Math.min(1000,S.bossHp+15);addLog('💀','Sconfitto nel dungeon');document.getElementById('combatLog').textContent='Caduto. Tornerai più forte.';setTimeout(()=>{document.getElementById('combatModal').classList.remove('show');save();render();toast('💀 Sconfitto','t-red');},1500);}
+}
+function closeCombat(){document.getElementById('combatModal').classList.remove('show');combat.active=false;}
+function toggleInteg(id){const el=document.getElementById(id);if(!el)return;el.classList.toggle('done');const c=document.getElementById('chk-'+id);if(c)c.textContent=el.classList.contains('done')?'✓':'☐';}
+function logWeight(){
+  const v=parseFloat(document.getElementById('wInput').value);
+  if(isNaN(v)||v<60||v>200){toast('Valore non valido','t-red');return;}
+  S.weightLog.push({v,date:new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'short'})});
+  incrementHQ('pesoStreak');document.getElementById('wInput').value='';
+  addLog('⚖','Peso: '+v.toFixed(1)+' kg');save();render();toast('⚖ '+v.toFixed(1)+' kg','t-green');
+  if(v<=80)setTimeout(()=>toast('🏆 80 KG!','t-purple'),600);
+  else if(v<=85)setTimeout(()=>toast('✅ 85 kg — Argento!','t-green'),600);
+  else if(v<=87)setTimeout(()=>toast('🥉 87 kg — Bronzo!','t-orange'),600);
+}
+function manualXP(){
+  const xp=parseInt(document.getElementById('adminXp').value);const note=document.getElementById('adminNote').value.trim();
+  if(isNaN(xp)||!xp||!note){toast('Valore o causale mancante','t-red');return;}
+  if(!confirm((xp>0?'+':'')+xp+' XP: '+note+'?'))return;
+  S.xp=Math.max(0,S.xp+xp);S.xpOggi=Math.max(0,(S.xpOggi||0)+xp);checkLevelUp();floatXP(xp,xp>0?'var(--gold)':'var(--red)');
+  addLog(xp>0?'⚡':'💀',(xp>0?'+':'')+xp+' XP — '+note);
+  document.getElementById('adminXp').value='';document.getElementById('adminNote').value='';
+  save();render();toast((xp>0?'+':'')+xp+' XP','t-gold');
+}
+function exportData(){const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='sistema_v91_'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('⬇ Export','t-green');}
+function importData(){const i=document.createElement('input');i.type='file';i.accept='.json';i.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const p=JSON.parse(ev.target.result);if(!confirm('Importare?'))return;S={...INIT,...p};save();render();restoreUI();toast('⬆ Importato','t-green');}catch{toast('File non valido','t-red');}};r.readAsText(f);};i.click();}
+function resetDay(){
+  if(!confirm('Reset giornaliero?'))return;
+  DAILY_QUESTS.forEach(q=>{S.quests[q.id]=false;});Object.keys(S.maluses||{}).forEach(k=>{S.maluses[k]=false;});
+  S.weekMalusCount=0;S.xpOggi=0;S.scanState={};S.currentProtocol=null;
+  document.getElementById('protocolloBox').classList.remove('show');
+  document.getElementById('missioneCard').style.display='none';
+  document.getElementById('dungeonCard').classList.remove('show');
+  document.body.classList.remove('dungeon-mode');
+  document.getElementById('counterattackBox').style.display='none';
+  save();render();restoreUI();toast('↺ Nuovo giorno','t-gold');
+}
+function salvaDiario(){S.diario=document.getElementById('diarioText').value;save();toast('💾 Salvato','t-gold');}
+async function generaNarrazione(){
+  const testo=document.getElementById('diarioText').value.trim();
+  if(!testo){toast('Scrivi le 5 domande!','t-red');return;}
+  const box=document.getElementById('narrazioneBox');box.style.display='block';box.classList.remove('show');box.textContent='Il Sistema elabora...';box.classList.add('show');
+  const cls=CLASSES.find(c=>c.lv===S.level)||CLASSES[0];
+  const prompt=`Sei la Voce del Sistema del Guerriero — stile Solo Leveling. Italiano, tono epico-narrativo fantasy, seconda persona.\n\nStato: ${cls.name} · Lv ${S.level} · Streak ${S.streak} · Lord Procrastinus ${S.bossHp}/1000 HP · Protocollo: ${S.currentProtocol||'non rilevato'}\n\nDiario:\n${testo}\n\nCronaca: max 3 paragrafi, prosa pura. Freddo, rispettoso, epico. Il Sistema valuta — non applaude sempre. Chiudi con una frase del Sistema per domani.`;
+  try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,messages:[{role:'user',content:prompt}]})});const data=await res.json();box.textContent=data.content?.map(x=>x.text||'').join('').trim()||'Il Sistema non risponde.';toast('⚔ Cronaca generata','t-purple');}catch{box.textContent='Connessione non riuscita.';toast('Errore','t-red');}
+}
+function addLogEntry(){const t=document.getElementById('logInput').value.trim();if(!t)return;document.getElementById('logInput').value='';addLog('📓',t);save();render();}
+function addLog(icon,text){const time=new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'short'});if(!S.logs)S.logs=[];S.logs.push({icon,text,time});if(S.logs.length>60)S.logs=S.logs.slice(-60);}
+function toast(msg,type='t-gold'){const t=document.getElementById('toast');t.className=type;t.textContent=msg;t.classList.add('show');clearTimeout(t._to);t._to=setTimeout(()=>t.classList.remove('show'),2400);}
+function floatXP(amount,color){const el=document.createElement('div');el.className='xp-float';el.style.cssText=`color:${color};top:${Math.random()*22+25}%;left:${Math.random()*38+31}%;text-shadow:0 0 12px currentColor;`;el.textContent=(amount>0?'+':'')+amount+' XP';document.body.appendChild(el);setTimeout(()=>el.remove(),1200);}
+function restoreUI(){
+  document.querySelectorAll('.quest-item').forEach(el=>{if(S.quests[el.id]){el.classList.add('done');const c=document.getElementById('chk-'+el.id);if(c)c.textContent='✓';}});
+  document.querySelectorAll('.malus-item').forEach(el=>{if(S.maluses&&S.maluses[el.id]){el.classList.add('applied');const c=document.getElementById('chk-'+el.id);if(c)c.textContent='✓';}});
+  document.getElementById('counterattackBox').style.display=(S.weekMalusCount||0)>=3?'block':'none';
+  if(S.diario)document.getElementById('diarioText').value=S.diario;
+}
+function switchTab(tab,el){
+  document.querySelectorAll('.q-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.q-tabs .q-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');if(el)el.classList.add('active');
+  if(tab==='training')renderWeekGrid();if(tab==='hidden')renderHiddenQuests();
+}
+function switchProg(p,el){
+  ['push','legs','pull','cardio'].forEach(k=>{const e=document.getElementById('prog-'+k);if(e)e.style.display='none';});
+  document.getElementById('prog-'+p).style.display='block';
+  document.querySelectorAll('#progTabs .q-tab').forEach(t=>t.classList.remove('active'));if(el)el.classList.add('active');
+}
+load();render();restoreUI();renderWeekGrid();
+</script>
+</body>
+</html>
