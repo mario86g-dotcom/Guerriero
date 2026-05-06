@@ -408,7 +408,7 @@ body.dungeon-mode .star{background:#b060f0;}
   <div style="display:grid;grid-template-columns:100px 1fr;gap:12px;align-items:start;">
     <div style="position:relative;border-radius:8px;overflow:hidden;">
       <img src="https://mario86g-dotcom.github.io/Guerriero/avatar_lv2.jpg" id="avatarImg" style="width:100%;display:block;border-radius:8px;"/>
-      <div style="position:absolute;top:4px;left:4px;background:linear-gradient(135deg,#7a4800,var(--gold));color:#08090f;font-family:'Cinzel',serif;font-weight:800;font-size:8px;padding:2px 7px;border-radius:5px;" id="avatarLv">LV 2</div>
+      <div style="position:absolute;top:4px;left:4px;background:linear-gradient(135deg,#7a4800,var(--gold));color:#08090f;font-family:'Cinzel',serif;font-weight:800;font-size:7px;padding:1px 5px;border-radius:4px;" id="avatarLv">LV 2</div>
     </div>
     <div class="class-timeline" id="classTimeline"></div>
   </div>
@@ -420,7 +420,7 @@ body.dungeon-mode .star{background:#b060f0;}
     <div class="streak-flame">🔥</div>
     <div class="streak-center">
       <div class="streak-num" id="streakNum">4</div>
-      <div class="streak-lbl">GIORNI</div>
+      <div class="streak-lbl">STREAK</div><div class="streak-lbl">GIORNI CONSECUTIVI</div>
       <div class="streak-msg" id="streakMsg">7 gg = +40 XP</div>
     </div>
     <div class="streak-btns">
@@ -674,7 +674,7 @@ body.dungeon-mode .star{background:#b060f0;}
 (function(){const bg=document.getElementById('starsBg');for(let i=0;i<55;i++){const s=document.createElement('div');s.className='star';const z=Math.random()*1.7+.7;s.style.cssText=`width:${z}px;height:${z}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;--op:${(Math.random()*.45+.1).toFixed(2)};animation-delay:${(Math.random()*4).toFixed(1)}s;`;bg.appendChild(s);}})();
 
 const CLASSES=[
-  {lv:1,name:'Il Dormiente',phrase:'Prima che il Sistema ti trovasse.',privilege:''},
+  {lv:1,name:'Il Dormiente',phrase:'Prima che il Sistema ti risvegliasse.',privilege:''},
   {lv:2,name:'Recluta del Varco',phrase:'Hai varcato la soglia. Nessuno torna indietro.',privilege:'Accesso al Sistema attivato.'},
   {lv:3,name:'Cacciatore in Ascesa',phrase:'Il corpo comincia a ricordare chi deve essere.',privilege:'Anello di Bronzo sbloccabile.'},
   {lv:4,name:'Guerriero del Dungeon',phrase:'Hai imparato a combattere nei giorni grigi.',privilege:'+1 pasto libero tattico al mese.'},
