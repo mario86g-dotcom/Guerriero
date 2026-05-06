@@ -403,9 +403,15 @@ body.dungeon-mode .star{background:#b060f0;}
 </div>
 
 <!-- ⑥ ASCENSIONE -->
-<div class="asc-card sg">
+<div class="card sg">
   <div class="card-title">⚡ Ascensione</div>
-  <div class="class-timeline" id="classTimeline"></div>
+  <div style="display:grid;grid-template-columns:100px 1fr;gap:12px;align-items:start;">
+    <div style="position:relative;border-radius:8px;overflow:hidden;">
+      <img src="https://mario86g-dotcom.github.io/Guerriero/avatar_lv2.jpg" id="avatarImg" style="width:100%;display:block;border-radius:8px;"/>
+      <div style="position:absolute;top:4px;left:4px;background:linear-gradient(135deg,#7a4800,var(--gold));color:#08090f;font-family:'Cinzel',serif;font-weight:800;font-size:8px;padding:2px 7px;border-radius:5px;" id="avatarLv">LV 2</div>
+    </div>
+    <div class="class-timeline" id="classTimeline"></div>
+  </div>
 </div>
 
 <!-- ⑦ STREAK (mini-widget) + XP -->
